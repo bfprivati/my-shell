@@ -1,0 +1,29 @@
+/* Aula 18/04 */
+
+Depois de instalar zsh pode que definir como shell default do usuário
+chsh -s $(which zsh)
+
+olhar como instalar no Github
+Pré requisitos de instalação
+- Curl
+
+Apresentação:
+- comparação entre bash e zsh
+
+
+____________________________________________________________________________________________________________________________________-
+Atividade para Nota
+
+➜  pipes ls > saida.txt
+➜  pipes ls
+basic    dup2    pipe_demo    saida.txt
+basic.c  dup2.c  pipe_demo.c
+➜  pipes cat saida.txt 
+basic
+basic.c
+dup2
+dup2.c
+pipe_demo
+pipe_demo.c
+saida.txt
+➜  pipes 
