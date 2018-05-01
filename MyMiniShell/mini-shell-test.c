@@ -36,7 +36,7 @@ int main()
 
   int fdin = open(in, O_RDONLY, 0);
   int fdout = open(out, O_WRONLY|O_APPEND, 0);
-  int fderror = open(error, O_WRONLY, 0);
+  int fderror = open(error, O_WRONLY|O_APPEND, 0);
 
   dup2(fdin, 0);
   dup2(fdout, 1);
