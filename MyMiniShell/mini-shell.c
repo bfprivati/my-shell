@@ -65,7 +65,6 @@ void func_error(){
 
 // 2>>
 void func_error_append(){
-void func_error(){
   char * in = "in.txt";
   char * out = "out.txt";
   char * error = "error.txt";
