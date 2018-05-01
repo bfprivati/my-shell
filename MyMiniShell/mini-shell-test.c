@@ -34,7 +34,7 @@ int main()
   char * out = "saida.txt";
 
   int fdin = open(in, O_RDONLY, 0);
-  int fdout = open(out, O_APPEND, 0);
+  int fdout = open(out, O_WRONLY|O_APPEND, 0);
 
   dup2(fdin, 0);
   dup2(fdout, 1);
