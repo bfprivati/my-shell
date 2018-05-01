@@ -44,7 +44,7 @@ int main()
 
   close(fdin);
   close(fdout);
-  close(ferror);
+  close(fderror);
 
   char * params[] = {"rm", "saidaaaaae1.txt", NULL};
   execvp("rm",params);
