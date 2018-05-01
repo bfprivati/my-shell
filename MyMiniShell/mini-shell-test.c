@@ -43,7 +43,7 @@ int main()
   close(fdout);
  
   char * params[] = {"ls",NULL};
-  exec("ls",params);
+  execvp("ls",params);
 
   return 0;
 }
