@@ -87,10 +87,26 @@ void func_error_append(){
 
 int main()
 {
-  func_out();
-  func_append();
-  func_error();
-  func_error_append();
+	int resp;
+	printf("		Menu\n");
+	printf("		1 - > out\n");
+	printf("		2 - >> append \n");
+	printf("		3 - 2> error\n");
+	printf("		4 - 2>> error append\n");
+	fflush(stdin);
+	scanf("%d",&resp);
 
-  return 0;
+	switch(resp)
+	{
+		case 1: func_out();
+			break;
+		case 2: func_append();
+			break;
+		case 3: func_error();
+			break;
+		case 4: func_error_append();
+			break;
+		default: exit(1);
+	}
+	return 0;
 }
