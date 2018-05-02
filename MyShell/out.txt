@@ -1,0 +1,10 @@
+error.txt
+in.txt
+my-shell
+my-shell.c
+my-shell.h
+out.txt
+anco
+roxo
+verde
+vermelho
