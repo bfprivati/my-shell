@@ -1,3 +1,71 @@
+#define MAX_ARR_SIZE 1024
+#define MAX_CMD_SIZE 1024
+
+// function to show prompt
+int show_prompt(){
+    char * user;
+    char host[MAX_ARR_SIZE];
+    char * home;
+    char cwdir[MAX_ARR_SIZE];
+
+    user = getenv("USER");
+    gethostname(host, MAX_ARR_SIZE);
+    home = getenv("HOME");
+
+    if( getcwd(cwdir, sizeof(cwdir)) != NULL)
+        printf("%s/%s%s -> ", user, host, cwdir);
+
+    // tratar home/aluno de cwdir e ~ em home
+}
+
+// read command given by the user
+int read_command(){
+    char cwdir[MAX_ARR_SIZE];
+    int i;
+    char command[MAX_CMD_SIZE];
+    char * token;
+    char * params[MAX_ARR_SIZE];
+
+    while (1) {
+        fflush(stdin);
+        signal(SIGHUP, SIG_IGN);    //bloquear KILL
+        signal(SIGINT, SIG_IGN);    //bloquear CTRLC
+        signal(SIGTSTP, SIG_IGN);
+        scanf(" %[^\n]s", command);
+        token = strtok(command, " ");
+
+        i = 0;
+        while(token != NULL) {
+            params[i] = (char *) malloc(sizeof(strlen(token)));
+            strcpy(params[i], token);
+            token = strtok(NULL, " ");
+
+            if (strcmp(params[i], "exit") == 0){
+                exit(0);
+            } else if (strcmp(params[i], "cd") == 0){
+                    i++;
+                    params[i] = (char *) malloc(sizeof(strlen(token)));
+                    strcpy(params[i], token);
+                    token = strtok(NULL, " ");
+                    if(token == NULL){
+                        char * home;
+                        home = getenv("HOME");
+                        chdir(home);
+                        if( getcwd(cwdir, sizeof(cwdir)) != NULL)
+                        printf("%s -> \n\n\n", cwdir);
+                    } else if( getcwd(cwdir, sizeof(cwdir)) != NULL) {
+                        chdir(params[i]);
+                        if( getcwd(cwdir, sizeof(cwdir)) != NULL)
+                        printf("%s -> \n\n\n", cwdir);
+                    }
+            }
+
+            i++;
+        }
+    };
+    return 1;
+}
+
 // >
 int func_out(){
     //char * in = "in.txt";

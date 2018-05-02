@@ -4,31 +4,27 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#include <signal.h>
 #include "my-shell.h"
 
 int main() {
+  char command;
 
-  int resp;
-  printf("		Menu\n");
-  printf("		1 - > out\n");
-  printf("		2 - >> append \n");
-  printf("		3 - 2> error\n");
-  printf("		4 - 2>> error append\n");
-  fflush(stdin);
-  scanf("%d",&resp);
-
-  switch(resp)
-  {
-    case 1: func_out();
+  do {
+    // show_prompt();
+    command = read_command();
+    switch(command){
+      case 1:
       break;
-    case 2: func_append();
+      case 2:
       break;
-    case 3: func_error();
+      default: 
+        printf("command not found\n");
       break;
-    case 4: func_error_append();
-      break;
-    default: exit(1);
-  }
+    }
+  } while (command != 0);
 
   return 0;
 }
