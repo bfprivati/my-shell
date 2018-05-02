@@ -1,3 +1,11 @@
+/*
+ * Authors:
+ *  Bianca Privati
+ *  Stefany Lacroux
+ *  Thiago Polycarpo
+ */
+
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
