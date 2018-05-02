@@ -8,7 +8,7 @@
 // >
 void func_out(){
   char * in = "in.txt";
-  char * out = "saida.txt";
+  char * out = "out.txt";
 
   int fdin = open(in, O_RDONLY, 0);
   int fdout = open(out, O_WRONLY, 0);
@@ -18,15 +18,15 @@ void func_out(){
 
   close(fdin);
   close(fdout);
- 
-  char * params[] = {"sort",NULL};
-  execvp("sort",params);
+
+  char * params[] = {"ls",NULL};
+  execvp("ls",params);
 }
 
 // >>
 void func_append(){
   char * in = "in.txt";
-  char * out = "saida.txt";
+  char * out = "out.txt";
 
   int fdin = open(in, O_RDONLY, 0);
   int fdout = open(out, O_WRONLY|O_APPEND, 0);
@@ -36,12 +36,12 @@ void func_append(){
 
   close(fdin);
   close(fdout);
- 
+
   char * params[] = {"sort",NULL};
   execvp("sort",params);
 }
 
-// 2> 
+// 2>
 void func_error(){
   char * in = "in.txt";
   char * out = "out.txt";
@@ -83,7 +83,7 @@ void func_error_append(){
 
   char * params[] = {"rm", "saidaaaaa.txt", NULL};
   execvp("rm",params);
-} 
+}
 
 int main()
 {

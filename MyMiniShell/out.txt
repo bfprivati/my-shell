@@ -1,0 +1,11 @@
+error.txt
+in.txt
+mini-shell
+mini-shell.c
+mini-shell-test.c
+out.txt
+
+amarelo
+azul
+branco
+verde

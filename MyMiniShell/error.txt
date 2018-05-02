@@ -1,0 +1,2 @@
+rm: não foi possível remover 'saidaaaaa.txt': Arquivo ou diretório não encontrado
+rm: não foi possível remover 'saidaaaaa.txt': Arquivo ou diretório não encontrado
