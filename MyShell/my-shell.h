@@ -3,17 +3,40 @@
 
 // function to show prompt
 int show_prompt(){
+    int i;
     char * user;
     char host[MAX_ARR_SIZE];
     char * home;
     char cwdir[MAX_ARR_SIZE];
+    char * token;
+    char * params[MAX_ARR_SIZE];
 
     user = getenv("USER");
     gethostname(host, MAX_ARR_SIZE);
     home = getenv("HOME");
+    getcwd(cwdir, sizeof(cwdir));
 
-    if( getcwd(cwdir, sizeof(cwdir)) != NULL)
-        printf("%s/%s%s -> ", user, host, cwdir);
+    if(cwdir != NULL)
+        printf("%s/%s%s ->", user, host, cwdir);
+
+    // printf("DIRETORIOOOOOO %s \n\n\n", cwdir);
+    // token = strtok(cwdir, "/");
+
+    // i = 0;
+    // while(token != NULL) {
+    //     params[i] = (char *) malloc(sizeof(strlen(token)));
+    //     strcpy(params[i], token);
+    //     token = strtok(NULL, " ");
+
+    //     if( strcmp(params[i], "home") == 0 ){
+    //         params[i] = "~";
+    //     } else if ( strcmp(params[i], "user") == 0 ){
+    //         params[i] = "SUERHSOSHSUHA";
+    //     }
+    //     printf("TESTEEE %s/%s/%s/%s ->\n\n\n", user, host, params[0], params[i]);
+    //     i++;
+    // }
+    // //getcwd(cwdir, sizeof(cwdir));
 
     // tratar home/aluno de cwdir e ~ em home
 }
@@ -26,43 +49,45 @@ int read_command(){
     char * token;
     char * params[MAX_ARR_SIZE];
 
-    while (1) {
-        fflush(stdin);
-        signal(SIGHUP, SIG_IGN);    //bloquear KILL
-        signal(SIGINT, SIG_IGN);    //bloquear CTRLC
-        signal(SIGTSTP, SIG_IGN);
-        scanf(" %[^\n]s", command);
-        token = strtok(command, " ");
+    fflush(stdin);              // limpa buffer
+    signal(SIGHUP, SIG_IGN);    // bloquear KILL
+    signal(SIGINT, SIG_IGN);    // bloquear CTRLC
+    signal(SIGTSTP, SIG_IGN);   // bloquear CTRLZ
 
-        i = 0;
-        while(token != NULL) {
-            params[i] = (char *) malloc(sizeof(strlen(token)));
-            strcpy(params[i], token);
-            token = strtok(NULL, " ");
+    // ler comando e tirar espaços
+    scanf(" %[^\n]s", command);
+    token = strtok(command, " ");
 
-            if (strcmp(params[i], "exit") == 0){
-                exit(0);
-            } else if (strcmp(params[i], "cd") == 0){
-                    i++;
-                    params[i] = (char *) malloc(sizeof(strlen(token)));
-                    strcpy(params[i], token);
-                    token = strtok(NULL, " ");
-                    if(token == NULL){
-                        char * home;
-                        home = getenv("HOME");
-                        chdir(home);
-                        if( getcwd(cwdir, sizeof(cwdir)) != NULL)
-                        printf("%s -> \n\n\n", cwdir);
-                    } else if( getcwd(cwdir, sizeof(cwdir)) != NULL) {
-                        chdir(params[i]);
-                        if( getcwd(cwdir, sizeof(cwdir)) != NULL)
-                        printf("%s -> \n\n\n", cwdir);
-                    }
-            }
+    i = 0;
+    while(token != NULL) {
+        params[i] = (char *) malloc(sizeof(strlen(token)));
+        strcpy(params[i], token);
+        token = strtok(NULL, " ");
 
-            i++;
+        if (strcmp(params[i], "exit") == 0){
+            exit(0);
+        } else if (strcmp(params[i], "cd") == 0){
+                i++;
+                params[i] = (char *) malloc(sizeof(strlen(token)));
+                strcpy(params[i], token);
+                token = strtok(NULL, " ");
+                // printf("PARAMETRO %s\n\n\n", params[i]);
+
+                if( getcwd(cwdir, sizeof(cwdir)) != NULL) {
+                    chdir(params[i]);
+                    // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
+                    // printf("DIRETORIO %s -> \n\n\n", cwdir);
+                } else if(token == NULL){
+                    char * home;
+                    home = getenv("HOME");
+                    chdir(home);
+                    // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
+                    // printf("%s -> \n\n\n", cwdir);
+                }
         }
-    };
+
+        i++;
+    }
     return 1;
 }
 
