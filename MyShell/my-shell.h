@@ -1,5 +1,7 @@
 #define MAX_ARR_SIZE 1024
 #define MAX_CMD_SIZE 1024
+#define ANSI_ESCAPE_SEQUENCE(EscapeSeq)   "\33[" EscapeSeq
+#define CTRLL 0xOC
 
 // function to show prompt
 int show_prompt(){
@@ -84,7 +86,31 @@ int read_command(){
                     // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
                     // printf("%s -> \n\n\n", cwdir);
                 }
+        } else if (strcmp(params[i], "clear") == 0) {
+            write(1, "\33[H\33[2J", 7);
         }
+        //else if (strcmp(params[i], "ls") == 0) {
+        //     struct dirent **namelist;
+        //     int n;
+        //     if(argc < 1) {
+        //         exit(EXIT_FAILURE);
+        //     } else if (argc == 1) {
+        //         n=scandir(“.”,&namelist,NULL,alphasort);
+        //     } else {
+        //         n = scandir(argv[1], &namelist, NULL, alphasort);
+        //     }
+        //     if(n < 0) {
+        //         perror(“scandir”);
+        //         exit(EXIT_FAILURE);
+        //     } else {
+        //         while (n–) {
+        //             printf(“%s\n”,namelist[n]->d_name);
+        //             free(namelist[n]);
+        //         }
+        //         free(namelist);
+        //     }
+        //     exit(EXIT_SUCCESS);
+        // }
 
         i++;
     }
