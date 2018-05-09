@@ -23,33 +23,33 @@ int show_prompt(){
     if(cwdir != NULL)
         printf("%s@%s ", user, host);
 
-    //replace_home_dir(cwdir);
+    replace_home_dir(cwdir);
 }
 
-// void replace_home_dir(char * cwdir){
-//     char * params[MAX_ARR_SIZE];
-//     char * token;
-//     printf("DIRETORIOOOOOO %s \n\n\n", cwdir);
-//     token = strtok(cwdir, "/");
+void replace_home_dir(char * cwdir){
+    char * params[MAX_ARR_SIZE];
+    char * token;
+    printf("DIRETORIOOOOOO %s \n\n\n", cwdir);
+    token = strtok(cwdir, "/");
 
-//     i = 0;
-//     while(token != NULL) {
-//         params[i] = (char *) malloc(sizeof(strlen(token)));
-//         strcpy(params[i], token);
-//         token = strtok(NULL, " ");
+    i = 0;
+    while(token != NULL) {
+        params[i] = (char *) malloc(sizeof(strlen(token)));
+        strcpy(params[i], token);
+        token = strtok(NULL, " ");
 
-//         if( strcmp(params[i], "home") == 0 ){
-//             params[i] = "~";
-//         } else if ( strcmp(params[i], "user") == 0 ){
-//             params[i] = "SUERHSOSHSUHA";
-//         }
-//         printf("TESTEEE %s/%s/%s/%s ->\n\n\n", params[0], params[i]);
-//         i++;
-//     }
+        if( strcmp(params[i], "home") == 0 ){
+            params[i] = "~";
+        } else if ( strcmp(params[i], "user") == 0 ){
+            params[i] = "SUERHSOSHSUHA";
+        }
+        printf("TESTEEE %s/%s/%s/%s ->\n\n\n", params[0], params[i]);
+        i++;
+    }
 
-//     // tratar home/aluno de cwdir e ~ em home
-//     return;
-// }
+    // tratar home/aluno de cwdir e ~ em home
+    return;
+}
 
 // read command given by the user
 int read_command(){
@@ -75,7 +75,7 @@ int read_command(){
 
         /*if(strcmp(params[i], "CTRLC CTRLZ") == 0){
 
-        } else*/ if (strcmp(params[i], "signal") == 0){
+        } else*/ if (strcmp(params[i], "exit") == 0){
         // Sai do programa
 
             exit(0);
