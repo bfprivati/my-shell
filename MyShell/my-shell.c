@@ -9,10 +9,13 @@
 #include <signal.h>
 #include "my-shell.h"
 
+
+
 int main() {
   char command;
 
   do{
+    clear_input();
     show_prompt();
     command = read_command();
     // if (command = zzzz)

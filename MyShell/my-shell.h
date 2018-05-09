@@ -8,50 +8,57 @@ int show_prompt(){
     int i;
     char * user;
     char host[MAX_ARR_SIZE];
-    char * home;
     char cwdir[MAX_ARR_SIZE];
+    char * home;
     char * token;
-    char * params[MAX_ARR_SIZE];
 
     user = getenv("USER");
-    gethostname(host, MAX_ARR_SIZE);
     home = getenv("HOME");
+    gethostname(host, MAX_ARR_SIZE);
     getcwd(cwdir, sizeof(cwdir));
 
+    // if(cwdir != NULL)
+    //     printf("%s/%s%s ->", user, host, cwdir);
+
     if(cwdir != NULL)
-        printf("%s/%s%s ->", user, host, cwdir);
+        printf("%s@%s ", user, host);
 
-    // printf("DIRETORIOOOOOO %s \n\n\n", cwdir);
-    // token = strtok(cwdir, "/");
-
-    // i = 0;
-    // while(token != NULL) {
-    //     params[i] = (char *) malloc(sizeof(strlen(token)));
-    //     strcpy(params[i], token);
-    //     token = strtok(NULL, " ");
-
-    //     if( strcmp(params[i], "home") == 0 ){
-    //         params[i] = "~";
-    //     } else if ( strcmp(params[i], "user") == 0 ){
-    //         params[i] = "SUERHSOSHSUHA";
-    //     }
-    //     printf("TESTEEE %s/%s/%s/%s ->\n\n\n", user, host, params[0], params[i]);
-    //     i++;
-    // }
-    // //getcwd(cwdir, sizeof(cwdir));
-
-    // tratar home/aluno de cwdir e ~ em home
+    //replace_home_dir(cwdir);
 }
+
+// void replace_home_dir(char * cwdir){
+//     char * params[MAX_ARR_SIZE];
+//     char * token;
+//     printf("DIRETORIOOOOOO %s \n\n\n", cwdir);
+//     token = strtok(cwdir, "/");
+
+//     i = 0;
+//     while(token != NULL) {
+//         params[i] = (char *) malloc(sizeof(strlen(token)));
+//         strcpy(params[i], token);
+//         token = strtok(NULL, " ");
+
+//         if( strcmp(params[i], "home") == 0 ){
+//             params[i] = "~";
+//         } else if ( strcmp(params[i], "user") == 0 ){
+//             params[i] = "SUERHSOSHSUHA";
+//         }
+//         printf("TESTEEE %s/%s/%s/%s ->\n\n\n", params[0], params[i]);
+//         i++;
+//     }
+
+//     // tratar home/aluno de cwdir e ~ em home
+//     return;
+// }
 
 // read command given by the user
 int read_command(){
-    char cwdir[MAX_ARR_SIZE];
     int i;
+    char cwdir[MAX_ARR_SIZE];
     char command[MAX_CMD_SIZE];
     char * token;
     char * params[MAX_ARR_SIZE];
 
-    fflush(stdin);              // limpa buffer
     signal(SIGHUP, SIG_IGN);    // bloquear KILL
     signal(SIGINT, SIG_IGN);    // bloquear CTRLC
     signal(SIGTSTP, SIG_IGN);   // bloquear CTRLZ
@@ -66,30 +73,52 @@ int read_command(){
         strcpy(params[i], token);
         token = strtok(NULL, " ");
 
-        if (strcmp(params[i], "exit") == 0){
+        /*if(strcmp(params[i], "CTRLC CTRLZ") == 0){
+
+        } else*/ if (strcmp(params[i], "signal") == 0){
+        // Sai do programa
+
             exit(0);
         } else if (strcmp(params[i], "cd") == 0){
-                i++;
-                params[i] = (char *) malloc(sizeof(strlen(token)));
-                strcpy(params[i], token);
-                token = strtok(NULL, " ");
-                // printf("PARAMETRO %s\n\n\n", params[i]);
+        // Mover entre diretórios
 
-                if( getcwd(cwdir, sizeof(cwdir)) != NULL) {
-                    chdir(params[i]);
-                    // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
-                    // printf("DIRETORIO %s -> \n\n\n", cwdir);
-                } else if(token == NULL){
-                    char * home;
-                    home = getenv("HOME");
-                    chdir(home);
-                    // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
-                    // printf("%s -> \n\n\n", cwdir);
-                }
+            i++;
+            params[i] = (char *) malloc(sizeof(strlen(token)));
+            strcpy(params[i], token);
+            token = strtok(NULL, " ");
+            // printf("PARAMETRO %s\n\n\n", params[i]);
+
+            if( getcwd(cwdir, sizeof(cwdir)) != NULL) {
+                chdir(params[i]);
+                // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
+                // printf("DIRETORIO %s -> \n\n\n", cwdir);
+            } else if(token == NULL){
+                char * home;
+                home = getenv("HOME");
+                chdir(home);
+                // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
+                // printf("%s -> \n\n\n", cwdir);
+            }
         } else if (strcmp(params[i], "clear") == 0) {
+        // Limpa terminal
+
             write(1, "\33[H\33[2J", 7);
-        }
-        //else if (strcmp(params[i], "ls") == 0) {
+        } else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], ">>") == 0) || (strcmp(params[i], "2>") == 0)) {
+        // Redirecionamento de arquivos
+            i++;
+            params[i] = (char *) malloc(sizeof(strlen(token)));
+            strcpy(params[i], token);
+            token = strtok(NULL, " ");
+
+            char * ant, prox;
+            strcpy(ant, params[i-1]);
+            i++;
+            params[i] = (char *) malloc(sizeof(strlen(token)));
+            strcpy(params[i], token);
+
+            //func_out(ant, prox);
+        } //else if (strcmp(params[i], "ls") == 0) {
+        // Mostra diretório
         //     struct dirent **namelist;
         //     int n;
         //     if(argc < 1) {
@@ -117,9 +146,14 @@ int read_command(){
     return 1;
 }
 
+void clear_input() {
+    fflush(stdin);
+    return;
+}
+
 // >
-int func_out(){
-    //char * in = "in.txt";
+void func_out(){
+    char * in = "in.txt";
     char * out = "out.txt";
 
     //int fdin = open(in, O_RDONLY, 0);
@@ -134,11 +168,11 @@ int func_out(){
     char * params[] = {"ls",NULL};
     execvp("ls",params);
 
-    return 0;
+    return;
 }
 
 // >>
-int func_append(){
+void func_append(){
     char * in = "in.txt";
     char * out = "out.txt";
 
@@ -154,11 +188,11 @@ int func_append(){
     char * params[] = {"sort",NULL};
     execvp("sort",params);
 
-    return 0;
+    return;
 }
 
 // 2>
-int func_error(){
+void func_error(){
     char * in = "in.txt";
     char * out = "out.txt";
     char * error = "error.txt";
@@ -178,11 +212,11 @@ int func_error(){
     char * params[] = {"rm", "saidaaaaa.txt", NULL};
     execvp("rm",params);
 
-    return 0;
+    return;
 }
 
 // 2>>
-int func_error_append(){
+void func_error_append(){
     char * in = "in.txt";
     char * out = "out.txt";
     char * error = "error.txt";
@@ -202,5 +236,5 @@ int func_error_append(){
     char * params[] = {"rm", "saidaaaaa.txt", NULL};
     execvp("rm",params);
 
-    return 0;
+    return;
 }
