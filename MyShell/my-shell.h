@@ -4,7 +4,7 @@
 #define CTRLL 0xOC
 
 // function to show prompt
-int show_prompt(){
+void show_prompt(){
     int i;
     char * user;
     char host[MAX_ARR_SIZE];
@@ -18,36 +18,36 @@ int show_prompt(){
     getcwd(cwdir, sizeof(cwdir));
 
     // if(cwdir != NULL)
-    //     printf("%s/%s%s ->", user, host, cwdir);
+    //     printf("%s@%s %s ->", user, host, cwdir);
 
-    if(cwdir != NULL)
-        printf("%s@%s ", user, host);
+    // if(cwdir != NULL)
+    //     printf("%s@%s ", user, host);
 
-    replace_home_dir(cwdir);
-}
-
-void replace_home_dir(char * cwdir){
     char * params[MAX_ARR_SIZE];
-    char * token;
-    printf("DIRETORIOOOOOO %s \n\n\n", cwdir);
     token = strtok(cwdir, "/");
 
     i = 0;
+    params[i] = (char *) malloc(sizeof(strlen(token)));
+    strcpy(params[i], token);
+    token = strtok(NULL, "/");
+
+    if( strcmp(params[i], "home") == 0 )
+        params[i] = "~";
+    
+    printf("%s@%s %s", user, host, params[0]);
+    i++;
+
     while(token != NULL) {
         params[i] = (char *) malloc(sizeof(strlen(token)));
         strcpy(params[i], token);
-        token = strtok(NULL, " ");
-
-        if( strcmp(params[i], "home") == 0 ){
-            params[i] = "~";
-        } else if ( strcmp(params[i], "user") == 0 ){
-            params[i] = "SUERHSOSHSUHA";
-        }
-        printf("TESTEEE %s/%s/%s/%s ->\n\n\n", params[0], params[i]);
+        token = strtok(NULL, "/");
+        if ( strcmp(params[i], "aluno") == 0 )
+            params[i] = "";
+        
+        printf("%s/", params[i]);
         i++;
     }
-
-    // tratar home/aluno de cwdir e ~ em home
+        printf("-> ");
     return;
 }
 
