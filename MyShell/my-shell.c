@@ -18,18 +18,6 @@ int main() {
     clear_input();
     show_prompt();
     command = read_command();
-    // if (command = zzzz)
-    //   switch_command(command);
-    // switch(command){
-    //   case 1:
-    //   break;
-    //   case 2:
-    //   break;
-    //   default:
-    //     printf("command not found\n");
-    //   break;
-    // }
-
   } while (command != 0);
 
   return 0;

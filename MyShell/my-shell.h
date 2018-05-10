@@ -3,6 +3,11 @@
 #define ANSI_ESCAPE_SEQUENCE(EscapeSeq)   "\33[" EscapeSeq
 #define CTRLL 0xOC
 
+void clear_input() {
+    fflush(stdin);
+    return;
+}
+
 // function to show prompt
 void show_prompt(){
     int i;
@@ -73,52 +78,51 @@ int read_command(){
         strcpy(params[i], token);
         token = strtok(NULL, " ");
 
-        /*if(strcmp(params[i], "CTRLC CTRLZ") == 0){
+        if(params[i] == '\0'){
+        // Se comando vazio, mostra terminal novamente
 
-        } else*/ if (strcmp(params[i], "exit") == 0){
+            printf("\n");
+        } else if (strcmp(params[i], "exit") == 0){
         // Sai do programa
 
             exit(0);
         } else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios
-
+            
+            char * home;
+            home = getenv("HOME");
+            
             i++;
-            params[i] = (char *) malloc(sizeof(strlen(token)));
-            strcpy(params[i], token);
-            token = strtok(NULL, " ");
-            // printf("PARAMETRO %s\n\n\n", params[i]);
-
-            if( getcwd(cwdir, sizeof(cwdir)) != NULL) {
-                chdir(params[i]);
-                // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
-                // printf("DIRETORIO %s -> \n\n\n", cwdir);
-            } else if(token == NULL){
-                char * home;
-                home = getenv("HOME");
-                chdir(home);
-                // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
-                // printf("%s -> \n\n\n", cwdir);
-            }
+            while(token != NULL) {
+                params[i] = (char *) malloc(sizeof(strlen(token)));
+                strcpy(params[i], token);
+                token = strtok(NULL, " ");
+                // token = strtok(NULL, "");
+            
+                if( getcwd(cwdir, sizeof(cwdir)) != NULL) {
+                    chdir(params[i]);
+                    // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
+                    // printf("DIRETORIO %s -> \n\n\n", cwdir);
+                } 
+                // else if( strcmp(params[i], "~")==0){
+                //     chdir(home);
+                //     // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
+                //     // printf("%s -> \n\n\n", cwdir);
+                // }
+                i++;
+            } 
+            // if (token == NULL) {
+            //     chdir(home);
+            //     return 1;
+            // }
         } else if (strcmp(params[i], "clear") == 0) {
         // Limpa terminal
 
             write(1, "\33[H\33[2J", 7);
-        } else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], ">>") == 0) || (strcmp(params[i], "2>") == 0)) {
-        // Redirecionamento de arquivos
-            i++;
-            params[i] = (char *) malloc(sizeof(strlen(token)));
-            strcpy(params[i], token);
-            token = strtok(NULL, " ");
+        }
+        // } else if (strcmp(params[i], "ls") == 0) {
+        // // Mostra diretório
 
-            char * ant, prox;
-            strcpy(ant, params[i-1]);
-            i++;
-            params[i] = (char *) malloc(sizeof(strlen(token)));
-            strcpy(params[i], token);
-
-            //func_out(ant, prox);
-        } //else if (strcmp(params[i], "ls") == 0) {
-        // Mostra diretório
         //     struct dirent **namelist;
         //     int n;
         //     if(argc < 1) {
@@ -140,15 +144,47 @@ int read_command(){
         //     }
         //     exit(EXIT_SUCCESS);
         // }
+        // i++;
 
-        i++;
+    //     if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], ">>") == 0) || (strcmp(params[i], "2>") == 0)) {
+    //     // Redirecionamento de arquivos
+            
+    //         i++;
+    //         while(token != NULL) {
+    //             params[i] = (char *) malloc(sizeof(strlen(token)));
+    //             strcpy(params[i], token);
+    //             token = strtok(NULL, " ");
+
+    //             if( getcwd(cwdir, sizeof(cwdir)) != NULL) {
+    //                 chdir(params[i]);
+    //                 // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
+    //                 // printf("DIRETORIO %s -> \n\n\n", cwdir);
+    //             } else if(params[i] == '\0'){
+    //                 char * home;
+    //                 home = getenv("HOME");
+    //                 printf("HOMI: %s", home);
+    //                 chdir(home);
+    //                 // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
+    //                 // printf("%s -> \n\n\n", cwdir);
+    //             }
+    //             i++;
+    //         }
+            
+    //         i++;
+    //         params[i] = (char *) malloc(sizeof(strlen(token)));
+    //         strcpy(params[i], token);
+    //         token = strtok(NULL, " ");
+
+    //         char * ant, prox;
+    //         strcpy(ant, params[i-1]);
+    //         i++;
+    //         params[i] = (char *) malloc(sizeof(strlen(token)));
+    //         strcpy(params[i], token);
+
+    //         //func_out(ant, prox);
+    //     }
     }
     return 1;
-}
-
-void clear_input() {
-    fflush(stdin);
-    return;
 }
 
 // >
