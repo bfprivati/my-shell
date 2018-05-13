@@ -76,6 +76,7 @@ int read_command(){
     while(token != NULL) {
         params[i] = (char *) malloc(sizeof(strlen(token)));
         strcpy(params[i], token);
+        printf("PARAMETRO %s", params[i]);
         token = strtok(NULL, " ");
 
         if ( strcmp(params[i], "exit") == 0 ){
@@ -112,15 +113,15 @@ int read_command(){
             /*
             switch (params[i-1]) {
                 case ">":
-                    func_out();
+                    func_out(params, arquivo);
                 break;
             
                 case "<":
-                    func_append();
+                    func_append(params, arquivo);
                 break;
 
                 case "2>":
-                    func_error();
+                    func_error(params, arquivo);
                 break;
 
                 default:
