@@ -46,7 +46,7 @@ void show_prompt(){
         params[i] = (char *) malloc(sizeof(strlen(token)));
         strcpy(params[i], token);
         token = strtok(NULL, "/");
-        if ( strcmp(params[i], "aluno") == 0 )
+        if ( strcmp(params[i], user) == 0 )
             params[i] = "";
         
         printf("%s/", params[i]);
@@ -75,10 +75,10 @@ int read_command(){
     i = 0;
     while(token != NULL) {
         params[i] = (char *) malloc(sizeof(strlen(token)));
+        printf("%s\n\n\n", params[i]);
         strcpy(params[i], token);
-        printf("PARAMETRO %s", params[i]);
         token = strtok(NULL, " ");
-
+        
         if ( strcmp(params[i], "exit") == 0 ){
             return 0;
         } else if (strcmp(params[i], "cd") == 0){
@@ -138,6 +138,7 @@ int read_command(){
     execvp(params[0], params);
     return 1;
 }
+
 /*
 // >
 void func_out(char *params[], char *out){
