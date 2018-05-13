@@ -76,13 +76,15 @@ int read_command(){
     while(token != NULL) {
         params[i] = (char *) malloc(sizeof(strlen(token)));
         strcpy(params[i], token);
-        printf("%s \n\n\n", params[i]);
+        //printf("%s \n\n\n", params[i]);
         token = strtok(NULL, " ");
         
         if ( strcmp(params[i], "exit") == 0 ){
+        // Sair do terminal OK
+
             return 0;
         } else if (strcmp(params[i], "cd") == 0){
-        // Mover entre diretórios
+        // Mover entre diretórios OK
             
             char * home;
             strcpy(home, getenv("HOME"));
@@ -134,7 +136,10 @@ int read_command(){
 
         i++;
     }   
-    
+    while(i != -1){
+        printf("%s  parametro %d, \n\n\n", params[i], i);
+        i--;
+    }
     execvp(params[0], params);
     return 1;
 }
