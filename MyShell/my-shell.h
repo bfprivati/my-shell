@@ -22,12 +22,6 @@ void show_prompt(){
     gethostname(host, MAX_ARR_SIZE);
     getcwd(cwdir, sizeof(cwdir));
 
-    // if(cwdir != NULL)
-    //     printf("%s@%s %s ->", user, host, cwdir);
-
-    // if(cwdir != NULL)
-    //     printf("%s@%s ", user, host);
-
     char * params[MAX_ARR_SIZE];
     token = strtok(cwdir, "/");
 
