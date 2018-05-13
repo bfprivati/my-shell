@@ -75,8 +75,8 @@ int read_command(){
     i = 0;
     while(token != NULL) {
         params[i] = (char *) malloc(sizeof(strlen(token)));
-        printf("%s\n\n\n", params[i]);
         strcpy(params[i], token);
+        printf("%s \n\n\n", params[i]);
         token = strtok(NULL, " ");
         
         if ( strcmp(params[i], "exit") == 0 ){
