@@ -1,0 +1,5 @@
+verde
+amarelo
+vermelho
+rosa
+laranja

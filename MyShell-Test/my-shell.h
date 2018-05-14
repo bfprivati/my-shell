@@ -2,6 +2,8 @@
 #define MAX_CMD_SIZE 1024
 #define ANSI_ESCAPE_SEQUENCE(EscapeSeq)   "\33[" EscapeSeq
 #define CTRLL 0xOC
+#define in 0
+#define out 1
 
 void clear_input() {
     fflush(stdin);
@@ -38,7 +40,7 @@ void show_prompt(){
 
     if( strcmp(params[i], "home") == 0 )
         params[i] = "~";
-    
+
     printf("%s@%s %s", user, host, params[0]);
     i++;
 
@@ -48,7 +50,7 @@ void show_prompt(){
         token = strtok(NULL, "/");
         if ( strcmp(params[i], user) == 0 )
             params[i] = "";
-        
+
         printf("%s/", params[i]);
         i++;
     }
@@ -78,72 +80,76 @@ int read_command(){
         strcpy(params[i], token);
         //printf("%s \n\n\n", params[i]);
         token = strtok(NULL, " ");
-        
+
         if ( strcmp(params[i], "exit") == 0 ){
         // Sair do terminal OK
 
             return 0;
         } else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios OK
-            
+
             char * home;
             strcpy(home, getenv("HOME"));
-            
+
             while(token != NULL) {
                 params[i] = (char *) malloc(sizeof(strlen(token)));
                 strcpy(params[i], token);
                 token = strtok(NULL, " ");
-            
+
                 if( getcwd(cwdir, sizeof(cwdir)) != NULL) {
                     chdir(params[i]);
-                } 
-                // else if( strcmp(params[i], "~")==0){
-                //     chdir(home);
-                //     // if( getcwd(cwdir, sizeof(cwdir)) != NULL)
-                //     // printf("%s -> \n\n\n", cwdir);
-                // }
+                }
                 i++;
             }
         } else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
-            char arquivo;
+            char *arquivo;
             i++;
             params[i] = (char *) malloc(sizeof(strlen(token)));
             printf("ARQUIVOOOOO %s", params[i]);
 
-            //strcpy(params[i], arquivo);
-            //token = strtok(NULL, " ");
-            /*
-            switch (params[i-1]) {
-                case ">":
-                    func_out(params, arquivo);
-                break;
-            
-                case "<":
-                    func_append(params, arquivo);
-                break;
+            strcpy(params[i], arquivo);
+            token = strtok(NULL, " ");
 
-                case "2>":
-                    func_error(params, arquivo);
-                break;
+            if (strcmp(params[i-1], ">") == 0) {
+                //func_out(params, arquivo);
+                printf("ENTROU FUNC_OUT");
+            } else if (strcmp(params[i], "<") == 0) {
+                func_in(params, arquivo);
+                printf("ENTROU FUNC_IN");
+            } else if (strcmp(params[i], "2>") == 0) {
+                // func_error(params, arquivo);
+                printf("ENTROU FUNC_ERROR");
+            }
 
-                default:
-                break;
-            } */
 
-        } /*else if ((strcmp(params[i], "|") == 0)) {
-
-        }*/
+        } else if ((strcmp(params[i], "|") == 0)) {
+            int fd[2];
+            pipe(fd);
+            int pid = fork();
+            if (pid == 0) {
+                close(fd[in]);
+                dup2(fd[out], out);
+                close(fd[out]);
+                char* params[] = {"ls", "/etc/", NULL};
+                execvp("ls", params);
+            } else {
+                close(fd[out]);
+                dup2(fd[in], in);
+                close(fd[in]);
+                char* params[] = {"more", NULL};
+                execvp("more", params);
+            }
+        }
 
         i++;
-    }   
-    while(i != -1){
+    }
+        while(i != -1){
         printf("%s  parametro %d, \n\n\n", params[i], i);
         i--;
     }
     execvp(params[0], params);
     return 1;
 }
-
 /*
 // >
 void func_out(char *params[], char *out){
@@ -151,7 +157,7 @@ void func_out(char *params[], char *out){
     // char * out = "out.txt";
 
     // int fdin = open(in, O_RDONLY, 0);
-    int fdout = open(out, O_WRONLY, 0);
+    int fdout = open(out, O_WRONLY | O_CREAT, 0);
 
     //dup2(fdin, 0);
     dup2(fdout, 1);
@@ -164,27 +170,28 @@ void func_out(char *params[], char *out){
 
     return;
 }
+*/
 
 // <
-void func_out(char *params[], char *out){
+void func_in(char *params[], char *in_file){
     // char * in = "in.txt";
     // char * out = "out.txt";
 
-    // int fdin = open(in, O_RDONLY, 0);
-    int fdout = open(out, O_WRONLY, 0);
+    int fdin = open(in_file, O_RDONLY, 0);
+    //int fdout = open(out, O_WRONLY | O_CREAT, 0);
 
-    //dup2(fdin, 0);
-    dup2(fdout, 1);
+    dup2(fdin, 0);
+    //dup2(fdout, 1);
 
-    // close(fdin);
-    close(fdout);
+    close(fdin);
+    //close(fdout);
 
     // char * params[] = {"ls",NULL};
     execvp(params[0], params);
 
     return;
 }
-
+/*
 // 2>
 void func_error(char *params[], char *out){
     // char * in = "in.txt";
