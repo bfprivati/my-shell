@@ -98,8 +98,8 @@ int read_command(){
         } else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios OK
 
-            char * home;
-            strcpy(home, getenv("HOME"));
+            // char * home;
+            // strcpy(home, getenv("HOME"));
 
             while(token != NULL) {
                 params[i] = (char *) malloc(sizeof(strlen(token)));
@@ -152,12 +152,23 @@ int read_command(){
         // }
 
         i++;
-    // }
-    //     while(i != -1){
-    //     printf("%s  parametro %d, \n\n\n", params[i], i);
-    //     i--;
     }
+    params[i] = token;
+    char *string[] = {"ls", NULL};
+
+        while(i != -1){
+            printf("%s  parametromeu %d, \n\n\n", params[i], i);
+            printf("%s  parametrosing %d, \n\n\n", params[i], i);
+
+            i--;
+        }
+    printf("string: ");
+
+    // execvp(string[0], string);
+
+    printf("\n\nmeu: \n\n");
     execvp(params[0], params);
+
     return 1;
 }
 /*
