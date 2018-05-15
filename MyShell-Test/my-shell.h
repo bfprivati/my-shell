@@ -24,12 +24,6 @@ void show_prompt(){
     gethostname(host, MAX_ARR_SIZE);
     getcwd(cwdir, sizeof(cwdir));
 
-    // if(cwdir != NULL)
-    //     printf("%s@%s %s ->", user, host, cwdir);
-
-    // if(cwdir != NULL)
-    //     printf("%s@%s ", user, host);
-
     char * params[MAX_ARR_SIZE];
     token = strtok(cwdir, "/");
 
@@ -58,6 +52,24 @@ void show_prompt(){
     return;
 }
 
+void tratar_signal (int signum){
+	printf("\n");
+}
+
+void signal_handler (){
+    signal(SIGHUP, SIG_IGN);    // bloquear KILL
+    signal(SIGINT, SIG_IGN);    // bloquear CTRLC
+    signal(SIGTSTP, SIG_IGN);   // bloquear CTRLZ
+
+	struct sigaction new_action; //struct da System Call Sigaction
+	memset(&new_action, 0, sizeof(new_action)); //inicializar a variavel
+	new_action.sa_handler = &tratar_signal; //recebe nova acao
+
+	sigaction(SIGINT, &new_action, NULL); 	//CTRL+C
+	sigaction(SIGTSTP, &new_action, NULL); 	//CTRL+Z
+    	//ENTER
+}
+
 // read command given by the user
 int read_command(){
     int i;
@@ -66,9 +78,7 @@ int read_command(){
     char * token;
     char * params[MAX_ARR_SIZE];
 
-    signal(SIGHUP, SIG_IGN);    // bloquear KILL
-    signal(SIGINT, SIG_IGN);    // bloquear CTRLC
-    signal(SIGTSTP, SIG_IGN);   // bloquear CTRLZ
+	signal_handler();
 
     // ler comando e tirar espaços
     scanf(" %[^\n]s", command);
@@ -114,38 +124,38 @@ int read_command(){
                 //func_out(params, arquivo);
                 printf("ENTROU FUNC_OUT");
             } else if (strcmp(params[i], "<") == 0) {
-                func_in(params, arquivo);
+                //func_in(params, arquivo);
                 printf("ENTROU FUNC_IN");
             } else if (strcmp(params[i], "2>") == 0) {
                 // func_error(params, arquivo);
                 printf("ENTROU FUNC_ERROR");
             }
 
-
-        } else if ((strcmp(params[i], "|") == 0)) {
-            int fd[2];
-            pipe(fd);
-            int pid = fork();
-            if (pid == 0) {
-                close(fd[in]);
-                dup2(fd[out], out);
-                close(fd[out]);
-                char* params[] = {"ls", "/etc/", NULL};
-                execvp("ls", params);
-            } else {
-                close(fd[out]);
-                dup2(fd[in], in);
-                close(fd[in]);
-                char* params[] = {"more", NULL};
-                execvp("more", params);
-            }
         }
+        // } else if ((strcmp(params[i], "|") == 0)) {
+        //     int fd[2];
+        //     pipe(fd);
+        //     int pid = fork();
+        //     if (pid == 0) {
+        //         close(fd[in]);
+        //         dup2(fd[out], out);
+        //         close(fd[out]);
+        //         char* params[] = {"ls", "/etc/", NULL};
+        //         execvp("ls", params);
+        //     } else {
+        //         close(fd[out]);
+        //         dup2(fd[in], in);
+        //         close(fd[in]);
+        //         char* params[] = {"more", NULL};
+        //         execvp("more", params);
+        //     }
+        // }
 
         i++;
-    }
-        while(i != -1){
-        printf("%s  parametro %d, \n\n\n", params[i], i);
-        i--;
+    // }
+    //     while(i != -1){
+    //     printf("%s  parametro %d, \n\n\n", params[i], i);
+    //     i--;
     }
     execvp(params[0], params);
     return 1;
@@ -170,7 +180,6 @@ void func_out(char *params[], char *out){
 
     return;
 }
-*/
 
 // <
 void func_in(char *params[], char *in_file){
@@ -191,7 +200,7 @@ void func_in(char *params[], char *in_file){
 
     return;
 }
-/*
+
 // 2>
 void func_error(char *params[], char *out){
     // char * in = "in.txt";
