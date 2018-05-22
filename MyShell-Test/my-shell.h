@@ -2,11 +2,25 @@
 #define MAX_CMD_SIZE 1024
 #define ANSI_ESCAPE_SEQUENCE(EscapeSeq)   "\33[" EscapeSeq
 #define CTRLL 0xOC
-#define in 0
-#define out 1
+#define entrada STDIN_FILENO
+#define saida STDOUT_FILENO
 
 void clear_input() {
     fflush(stdin);
+    return;
+}
+
+void io_rdrct(in, out){
+    if (in != STDIN_FILENO) {
+      dup2(in, STDIN_FILENO);
+      close(in);
+    }
+
+    if (out != STDOUT_FILENO) {
+      dup2(out, STDOUT_FILENO);
+      close(out);
+    }
+
     return;
 }
 
@@ -118,52 +132,61 @@ int read_command(){
                 }
                 i++;
             }
-
-        } else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
-            char *arquivo;
-            i++;
-            params[i] = (char *) malloc(sizeof(strlen(token)));
-            strcpy(params[i], arquivo);
-            token = strtok(NULL, " ");
-            printf("ARQUIVOOOOO %s", params[i]);
-
-            if (strcmp(params[i-1], ">") == 0) {
-                // char * out = params[i];
-                // int fdout = open(out, O_WRONLY | O_CREAT, 0);
-                // dup2(fdout, 1);
-
-                printf("ENTROU FUNC_OUT");
-            } else if (strcmp(params[i], "<") == 0) {
-                //func_in(params, arquivo);
-                printf("ENTROU FUNC_IN");
-            } else if (strcmp(params[i], "2>") == 0) {
-                // func_error(params, arquivo);
-                printf("ENTROU FUNC_ERROR");
-            }
-
-        } else if ((strcmp(params[i], "|") == 0)) {
-            int fd[2];
-            pipe(fd);
-            int pid = fork();
-            if (pid == 0) {
-                close(fd[in]);
-                dup2(fd[out], out);
-                close(fd[out]);
-                execvp(params[0], params);
-            } else {
-                close(fd[out]);
-                dup2(fd[in], in);
-                close(fd[in]);
-                execvp(params[0], params);
-            }
         }
 
         i++;
     }
     params[i] = token;
-    return execvp(params[0], params);
+    create_process(params);
+    //return execvp(params[0], params);
 
-    // return 1;
+    return 1;
+}
+
+int create_process(char **params){
+    execvp(params[0], params);
+
+//     if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
+//         char *arquivo;
+//         i++;
+//         params[i] = (char *) malloc(sizeof(strlen(token)));
+//         strcpy(params[i], arquivo);
+//         token = strtok(NULL, " ");
+//         printf("ARQUIVOOOOO %s", params[i]);
+
+//         if (strcmp(params[i-1], ">") == 0) {
+//             // char * out = params[i];
+//             // int fdout = open(out, O_WRONLY | O_CREAT, 0);
+//             // dup2(fdout, 1);
+
+//             printf("ENTROU FUNC_OUT");
+//         } else if (strcmp(params[i], "<") == 0) {
+//             //func_in(params, arquivo);
+//             printf("ENTROU FUNC_IN");
+//         } else if (strcmp(params[i], "2>") == 0) {
+//             // func_error(params, arquivo);
+//             printf("ENTROU FUNC_ERROR");
+//         }
+
+//     } else if ((strcmp(params[i], "|") == 0)) {
+//         int fd[2];
+//         pipe(fd);
+//         int pid = fork();
+//         if (pid == 0) {
+//             close(fd[in]);
+//             dup2(fd[out], out);
+//             close(fd[out]);
+//             execvp(params[0], params);
+//         } else {
+//             close(fd[out]);
+//             dup2(fd[in], in);
+//             close(fd[in]);
+//             execvp(params[0], params);
+//         }
+//     }
+
+
+    return 1;
 }
 
 /*

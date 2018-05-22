@@ -9,13 +9,12 @@
 #include <signal.h>
 #include "my-shell.h"
 
-
-
 int main() {
   char command;
 
   do{
     clear_input();
+    io_rdrct(entrada, saida);
     show_prompt();
     command = read_command();
   } while (command != 0);
