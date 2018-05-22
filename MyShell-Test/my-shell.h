@@ -49,7 +49,7 @@ void show_prompt(){
         printf("%s/", params[i]);
         i++;
     }
-        printf("-> ");
+        printf(" $ ");
     return;
 }
 
@@ -98,71 +98,74 @@ int read_command(){
         } else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios OK
 
-            if( (token == NULL) || (strcmp(params[i], ">")) ){
-                    char homeDir[50];
-                    strcpy(homeDir, getenv("HOME"));
-                    params[i] = (char *) malloc(sizeof(strlen(token)));
-                    strcpy(params[i], homeDir);
-                    chdir(params[i]);
-            }
+            // if( (token == NULL) || (strcmp(params[i], ">")) ){
+            //         char homeDir[50];
+            //         strcpy(homeDir, getenv("HOME"));
+            //         params[i] = (char *) malloc(sizeof(strlen(token)));
+            //         strcpy(params[i], homeDir);
+            //         chdir(params[i]);
+            // }
             while(token != NULL) {
+                int dir = 0;
                 params[i] = (char *) malloc(sizeof(strlen(token)));
                 strcpy(params[i], token);
                 token = strtok(NULL, " ");
 
                 if( getcwd(cwdir, sizeof(cwdir)) != NULL) {
-                    chdir(params[i]);
+                    dir = chdir(params[i]);
+                    if(dir != 0)
+                        fprintf(stderr, "cd: '%s' file or directory not found\n", params[i]);
                 }
                 i++;
             }
 
-        } //else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
-        //     char *arquivo;
-        //     i++;
-        //     params[i] = (char *) malloc(sizeof(strlen(token)));
-        //     printf("ARQUIVOOOOO %s", params[i]);
+        } else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
+            char *arquivo;
+            i++;
+            params[i] = (char *) malloc(sizeof(strlen(token)));
+            strcpy(params[i], arquivo);
+            token = strtok(NULL, " ");
+            printf("ARQUIVOOOOO %s", params[i]);
 
-        //     strcpy(params[i], arquivo);
-        //     token = strtok(NULL, " ");
+            if (strcmp(params[i-1], ">") == 0) {
+                // char * out = params[i];
+                // int fdout = open(out, O_WRONLY | O_CREAT, 0);
+                // dup2(fdout, 1);
 
-        //     if (strcmp(params[i-1], ">") == 0) {
-        //         //func_out(params, arquivo);
-        //         printf("ENTROU FUNC_OUT");
-        //     } else if (strcmp(params[i], "<") == 0) {
-        //         //func_in(params, arquivo);
-        //         printf("ENTROU FUNC_IN");
-        //     } else if (strcmp(params[i], "2>") == 0) {
-        //         // func_error(params, arquivo);
-        //         printf("ENTROU FUNC_ERROR");
-        //     }
+                printf("ENTROU FUNC_OUT");
+            } else if (strcmp(params[i], "<") == 0) {
+                //func_in(params, arquivo);
+                printf("ENTROU FUNC_IN");
+            } else if (strcmp(params[i], "2>") == 0) {
+                // func_error(params, arquivo);
+                printf("ENTROU FUNC_ERROR");
+            }
 
-        // }
-        // } else if ((strcmp(params[i], "|") == 0)) {
-        //     int fd[2];
-        //     pipe(fd);
-        //     int pid = fork();
-        //     if (pid == 0) {
-        //         close(fd[in]);
-        //         dup2(fd[out], out);
-        //         close(fd[out]);
-        //         char* params[] = {"ls", "/etc/", NULL};
-        //         execvp("ls", params);
-        //     } else {
-        //         close(fd[out]);
-        //         dup2(fd[in], in);
-        //         close(fd[in]);
-        //         char* params[] = {"more", NULL};
-        //         execvp("more", params);
-        //     }
-        // }
+        } else if ((strcmp(params[i], "|") == 0)) {
+            int fd[2];
+            pipe(fd);
+            int pid = fork();
+            if (pid == 0) {
+                close(fd[in]);
+                dup2(fd[out], out);
+                close(fd[out]);
+                execvp(params[0], params);
+            } else {
+                close(fd[out]);
+                dup2(fd[in], in);
+                close(fd[in]);
+                execvp(params[0], params);
+            }
+        }
 
         i++;
     }
     params[i] = token;
-    execvp(params[0], params);
+    return execvp(params[0], params);
 
-    return 1;
+    // return 1;
 }
+
 /*
 // >
 void func_out(char *params[], char *out){
