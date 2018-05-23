@@ -99,6 +99,10 @@ int read_command(){
     scanf(" %[^\n]s", command);
     token = strtok(command, " ");
 
+    if(token == NULL) {
+        return 1;
+    }
+
     i = 0;
     while(token != NULL) {
         params[i] = (char *) malloc(sizeof(strlen(token)));
