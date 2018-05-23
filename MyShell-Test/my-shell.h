@@ -108,7 +108,7 @@ int read_command(){
         if ( strcmp(params[i], "exit") == 0 ){
         // Sair do terminal OK
 
-            return 0;
+            return -2;
         } else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios OK
 

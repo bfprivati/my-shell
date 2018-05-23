@@ -9,6 +9,9 @@
 #include <signal.h>
 #include "my-shell.h"
 
+#define entrada STDIN_FILENO
+#define saida STDOUT_FILENO
+
 int main() {
   char command;
 
@@ -17,7 +20,7 @@ int main() {
     io_rdrct(entrada, saida);
     show_prompt();
     command = read_command();
-  } while (command != 0);
+  } while (command != -2);
 
   return 0;
 }
