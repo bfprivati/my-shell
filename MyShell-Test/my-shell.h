@@ -99,18 +99,18 @@ int read_command(){
     scanf(" %[^\n]s", command);
     token = strtok(command, " ");
 
-
     i = 0;
     while(token != NULL) {
         params[i] = (char *) malloc(sizeof(strlen(token)));
         strcpy(params[i], token);
         token = strtok(NULL, " ");
-printf("PRIMEIRA STRING AAAAAAAAAAAAA: %s", params[i]);
 
-        if( strcmp(params[i], '\n') == 0 ) {
+printf("PRIMEIRA STRING AAAAAAAAAAAAA: %s", params[i]);
+ 
+        /*if( strcmp(params[i], '\n') == 0 ) {
             printf("ENTROU BARRA N \n\n\n");
             return 1;
-        } else if ( strcmp(params[i], "exit") == 0 ){
+        } else*/ if ( strcmp(params[i], "exit") == 0 ){
         // Sair do terminal OK
 
             return -2;
