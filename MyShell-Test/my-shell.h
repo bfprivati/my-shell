@@ -2,23 +2,21 @@
 #define MAX_CMD_SIZE 1024
 #define ANSI_ESCAPE_SEQUENCE(EscapeSeq)   "\33[" EscapeSeq
 #define CTRLL 0xOC
-#define entrada STDIN_FILENO
-#define saida STDOUT_FILENO
 
 void clear_input() {
     fflush(stdin);
     return;
 }
 
-void io_rdrct(in, out){
-    if (in != STDIN_FILENO) {
-      dup2(in, STDIN_FILENO);
-      close(in);
+void io_rdrct(entrada, saida){
+    if (entrada != STDIN_FILENO) {
+      dup2(entrada, STDIN_FILENO);
+      close(entrada);
     }
 
-    if (out != STDOUT_FILENO) {
-      dup2(out, STDOUT_FILENO);
-      close(out);
+    if (saida != STDOUT_FILENO) {
+      dup2(saida, STDOUT_FILENO);
+      close(saida);
     }
 
     return;
@@ -86,8 +84,8 @@ void signal_handler (){
 }
 
 // read command given by the user
-int read_command(){
-    int i;
+int read_command() {
+    int i, dir;
     char cwdir[MAX_ARR_SIZE];
     char command[MAX_CMD_SIZE];
     char * token;
@@ -105,7 +103,7 @@ int read_command(){
         strcpy(params[i], token);
         token = strtok(NULL, " ");
 
-printf("PRIMEIRA STRING AAAAAAAAAAAAA: %s", params[i]);
+    printf("PRIMEIRA STRING AAAAAAAAAAAAA: %s\n\n\n\n", params[i]);
  
         /*if( strcmp(params[i], '\n') == 0 ) {
             printf("ENTROU BARRA N \n\n\n");
@@ -116,40 +114,40 @@ printf("PRIMEIRA STRING AAAAAAAAAAAAA: %s", params[i]);
             return -2;
         } else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios OK
-
-            // if( (token == NULL) || (strcmp(params[i], ">")) ){
-            //         char homeDir[50];
-            //         strcpy(homeDir, getenv("HOME"));
-            //         params[i] = (char *) malloc(sizeof(strlen(token)));
-            //         strcpy(params[i], homeDir);
-            //         chdir(params[i]);
-            // }
-            while(token != NULL) {
-                int dir = 0;
-                params[i] = (char *) malloc(sizeof(strlen(token)));
-                strcpy(params[i], token);
-                token = strtok(NULL, " ");
-
-                if( getcwd(cwdir, sizeof(cwdir)) != NULL) {
-                    dir = chdir(params[i]);
-                    if(dir != 0)
+            if ((token == NULL) || (token == "~")){
+            	
+            	dir = chdir(getenv("HOME"));
+            	if(dir != 0)//se retornar -1, ocorreu erro
                         fprintf(stderr, "cd: '%s' file or directory not found\n", params[i]);
-                }
-                i++;
-            }
-        }
 
+            } else {
+	            while(token != NULL) {
+	                dir = 0;
+	                params[i] = (char *) malloc(sizeof(strlen(token)));//aloca...
+	                strcpy(params[i], token);//Copia token
+	                token = strtok(NULL, " ");
+	                
+	                dir = chdir(params[i]);
+                    if(dir != 0)//se retornar -1, ocorreu erro
+	                    fprintf(stderr, "cd: '%s' file or directory not found\n", params[i]);
+
+	                i++;
+	            }
+            }
+
+        }
         i++;
     }
+
     params[i] = token;
-    create_process(params);
+    //create_process(params);
     //return execvp(params[0], params);
 
-    return 1;
+   return 1;
 }
 
-int create_process(char **params){
-    execvp(params[0], params);
+// int create_process(char **params){
+//     execvp(params[0], params);
 
 //     if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
 //         char *arquivo;
@@ -191,8 +189,8 @@ int create_process(char **params){
 //     }
 
 
-    return 1;
-}
+    //  return 1;
+// }
 
 /*
 // >

@@ -9,11 +9,12 @@
 #include <signal.h>
 #include "my-shell.h"
 
-#define entrada STDIN_FILENO
-#define saida STDOUT_FILENO
 
 int main() {
-  char command = 0 ;
+  char command;
+
+  char entrada = STDIN_FILENO;
+  char saida = STDOUT_FILENO;
 
   while(command != -2) {
     clear_input();
