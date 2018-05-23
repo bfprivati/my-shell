@@ -105,6 +105,7 @@ int read_command(){
         params[i] = (char *) malloc(sizeof(strlen(token)));
         strcpy(params[i], token);
         token = strtok(NULL, " ");
+printf("PRIMEIRA STRING AAAAAAAAAAAAA: %s", params[i]);
 
         if( strcmp(params[i], '\n') == 0 ) {
             printf("ENTROU BARRA N \n\n\n");
