@@ -7,20 +7,23 @@
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
+#include <wait.h>
 #include "my-shell.h"
 
 
 int main() {
   char command;
 
-  char entrada = STDIN_FILENO;
-  char saida = STDOUT_FILENO;
+  // char entrada = STDIN_FILENO;
+  // char saida = STDOUT_FILENO;
 
-  while(command != -2) {
+  while(1) {
     clear_input();
-    io_rdrct(entrada, saida);
+    //io_rdrct(entrada, saida);
     show_prompt();
     command = read_command();
+    if (command == -2)
+      exit(0);
   }
   
   return 0;

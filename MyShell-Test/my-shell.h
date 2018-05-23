@@ -2,27 +2,28 @@
 #define MAX_CMD_SIZE 1024
 #define ANSI_ESCAPE_SEQUENCE(EscapeSeq)   "\33[" EscapeSeq
 #define CTRLL 0xOC
+#define in 0
+#define out 1
 
 void clear_input() {
     fflush(stdin);
     return;
 }
 
-void io_rdrct(entrada, saida){
-    if (entrada != STDIN_FILENO) {
-      dup2(entrada, STDIN_FILENO);
-      close(entrada);
-    }
+// void io_rdrct(entrada, saida){
+//     if (entrada != STDIN_FILENO) {
+//       dup2(entrada, STDIN_FILENO);
+//       close(entrada);
+//     }
 
-    if (saida != STDOUT_FILENO) {
-      dup2(saida, STDOUT_FILENO);
-      close(saida);
-    }
+//     if (saida != STDOUT_FILENO) {
+//       dup2(saida, STDOUT_FILENO);
+//       close(saida);
+//     }
 
-    return;
-}
+//     return;
+// }
 
-// function to show prompt
 void show_prompt(){
     int i;
     char * user;
@@ -83,7 +84,64 @@ void signal_handler (){
     	//ENTER
 }
 
-// read command given by the user
+// int spawn_process(char **params, int len) {
+//     // SOMENTE USAR QUANDO LS -LA | SORT | MORE
+//     // USAR ARRAY DE ARRAYS, TRATANDO | 
+//
+//     int i;
+//     int fd[2];
+//     int pid;
+//     for(i=0; i < len -1 ; i++) {
+//         pipe(fd);
+//         pid = fork();
+//         if (pid == 0) {
+//             // filho
+//             dup2(fd[out],out);
+//             close(fd[out]);
+//             close(fd[in]);
+//             execvp(params[i][0],params[i]);
+//         } else {
+//             //pai
+//             dup2(fd[in],in);
+//             close(fd[out]);
+//             close(fd[in]);
+//         }
+//     }
+//     pid = fork();
+//     if (pid == 0) {
+//         // flho
+//         execvp(params[len-1][0],params[len-1]);
+//     } else {
+//         // pai
+//         int res;
+//         while (1) {
+//         pid = wait(&res);
+//         if (pid == -1)
+//             break;
+//         printf("Processo %d encerrou.\n", pid);
+//         }
+//     }
+// }
+
+int create_process(char **params){
+    // SOMENTE PARA LS
+    int pid = fork();
+
+    if (pid == 0) {
+    // codigo do processo filho
+        execvp(params[0], params);
+    } else {
+    // codigo do processo pai
+        int res;
+        waitpid(pid, &res, 0);
+
+        if (WIFEXITED(res) && (WEXITSTATUS(res)==0)) 
+            return 1;
+    }
+
+    return 1;
+}
+
 int read_command() {
     int i, dir;
     char cwdir[MAX_ARR_SIZE];
@@ -103,23 +161,22 @@ int read_command() {
         strcpy(params[i], token);
         token = strtok(NULL, " ");
 
-    printf("PRIMEIRA STRING AAAAAAAAAAAAA: %s\n\n\n\n", params[i]);
+    // printf("PRIMEIRA STRING AAAAAAAAAAAAA: %s\n\n\n\n", params[i]);
  
         /*if( strcmp(params[i], '\n') == 0 ) {
             printf("ENTROU BARRA N \n\n\n");
             return 1;
-        } else*/ if ( strcmp(params[i], "exit") == 0 ){
+        } else*/ 
+        if ( strcmp(params[i], "exit") == 0 ){
         // Sair do terminal OK
 
             return -2;
         } else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios OK
             if ((token == NULL) || (token == "~")){
-            	
             	dir = chdir(getenv("HOME"));
             	if(dir != 0)//se retornar -1, ocorreu erro
                         fprintf(stderr, "cd: '%s' file or directory not found\n", params[i]);
-
             } else {
 	            while(token != NULL) {
 	                dir = 0;
@@ -133,64 +190,43 @@ int read_command() {
 
 	                i++;
 	            }
-            }
+            }     
+            //} else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
+            //     char *arquivo;
+            //     i++;
+            //     params[i] = (char *) malloc(sizeof(strlen(token)));
+            //     strcpy(params[i], arquivo);
+            //     token = strtok(NULL, " ");
+            //     printf("ARQUIVOOOOO %s", params[i]);
+
+            //     if (strcmp(params[i-1], ">") == 0) {
+            //         printf("ENTROU FUNC_OUT");
+
+            //         char * out = params[i];
+            //         int fdout = open(out, O_WRONLY | O_CREAT, 0);
+            //         dup2(fdout, 1);
+
+            //     } else if (strcmp(params[i], "<") == 0) {
+            //         //func_in(params, arquivo);
+            //         printf("ENTROU FUNC_IN");
+            //     } else if (strcmp(params[i], "2>") == 0) {
+            //         // func_error(params, arquivo);
+            //         printf("ENTROU FUNC_ERROR");
+            //     }
+            // }
 
         }
         i++;
     }
 
+    // SE TEM PIPE, RETORNA ARRAY DE ARRAYS E USAR FORK OUTRO spawn_process(params, sizeof(params)/8);
+    // SE NÃO TEM PIPE, USAR FORK NORMAL     create_process(params);
+
     params[i] = token;
-    //create_process(params);
-    //return execvp(params[0], params);
+    create_process(params);
 
    return 1;
 }
-
-// int create_process(char **params){
-//     execvp(params[0], params);
-
-//     if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
-//         char *arquivo;
-//         i++;
-//         params[i] = (char *) malloc(sizeof(strlen(token)));
-//         strcpy(params[i], arquivo);
-//         token = strtok(NULL, " ");
-//         printf("ARQUIVOOOOO %s", params[i]);
-
-//         if (strcmp(params[i-1], ">") == 0) {
-//             // char * out = params[i];
-//             // int fdout = open(out, O_WRONLY | O_CREAT, 0);
-//             // dup2(fdout, 1);
-
-//             printf("ENTROU FUNC_OUT");
-//         } else if (strcmp(params[i], "<") == 0) {
-//             //func_in(params, arquivo);
-//             printf("ENTROU FUNC_IN");
-//         } else if (strcmp(params[i], "2>") == 0) {
-//             // func_error(params, arquivo);
-//             printf("ENTROU FUNC_ERROR");
-//         }
-
-//     } else if ((strcmp(params[i], "|") == 0)) {
-//         int fd[2];
-//         pipe(fd);
-//         int pid = fork();
-//         if (pid == 0) {
-//             close(fd[in]);
-//             dup2(fd[out], out);
-//             close(fd[out]);
-//             execvp(params[0], params);
-//         } else {
-//             close(fd[out]);
-//             dup2(fd[in], in);
-//             close(fd[in]);
-//             execvp(params[0], params);
-//         }
-//     }
-
-
-    //  return 1;
-// }
 
 /*
 // >
