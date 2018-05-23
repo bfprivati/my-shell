@@ -100,6 +100,7 @@ int read_command(){
     token = strtok(command, " ");
 
     if(token == '\n') {
+        printf("ENTROU BARRA N \n\n\n");
         return 1;
     }
 
