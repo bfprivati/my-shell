@@ -99,7 +99,7 @@ int read_command(){
     scanf(" %[^\n]s", command);
     token = strtok(command, " ");
 
-    if(token == '\n') {
+    if(token == '\n' || token == '\0') {
         printf("ENTROU BARRA N \n\n\n");
         return 1;
     }
