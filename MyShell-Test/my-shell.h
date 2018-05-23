@@ -106,7 +106,7 @@ int read_command(){
         strcpy(params[i], token);
         token = strtok(NULL, " ");
 
-        if( strcmp(params[i], "\n") == 0 ) {
+        if( strcmp(params[i], '\n') == 0 ) {
             printf("ENTROU BARRA N \n\n\n");
             return 1;
         } else if ( strcmp(params[i], "exit") == 0 ){
