@@ -9,16 +9,18 @@
 #include <signal.h>
 #include "my-shell.h"
 
-
+#define entrada STDIN_FILENO
+#define saida STDOUT_FILENO
 
 int main() {
-  char command;
+  char command = 0 ;
 
-  do{
+  while(command != -2) {
     clear_input();
+    io_rdrct(entrada, saida);
     show_prompt();
     command = read_command();
-  } while (command != 0);
-
+  }
+  
   return 0;
 }
