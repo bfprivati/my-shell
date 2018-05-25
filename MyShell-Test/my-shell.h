@@ -124,7 +124,6 @@ void signal_handler (){
 // }
 
 int create_process(char **params){
-    // SOMENTE PARA LS
     int pid = fork();
 
     if (pid == 0) {
@@ -167,10 +166,16 @@ int read_command() {
             printf("ENTROU BARRA N \n\n\n");
             return 1;
         } else*/ 
-        if ( strcmp(params[i], "exit") == 0 ){
-        // Sair do terminal OK
 
+        if ( strcmp(params[i], "exit") == 0 ){
+          //  printf("saindo ... : %s\n\n", params[i]);
+        // Sair do terminal OK
             return -2;
+        } else   if ( strcmp(params[i], "ls") == 0 ){
+           //printf("ls ... : %s\n\n", params[i]);
+        // Sair do terminal OK
+            create_process(params);
+            
         } else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios OK
             if ((token == NULL) || (token == "~")){
@@ -223,8 +228,9 @@ int read_command() {
     // SE NÃO TEM PIPE, USAR FORK NORMAL     create_process(params);
 
     params[i] = token;
-    create_process(params);
+    
 
+ 
    return 1;
 }
 
