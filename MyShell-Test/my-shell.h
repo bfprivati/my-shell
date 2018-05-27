@@ -152,9 +152,9 @@ int read_command() {
     char command[MAX_CMD_SIZE];
     char * token;
     char * params[MAX_ARR_SIZE];
-    char stdin_cp = STDIN_FILENO;
-    char stdout_cp = STDOUT_FILENO;
-    char stderr_cp = STDERR_FILENO;
+    char * stdin_cp = STDIN_FILENO;
+    char * stdout_cp = STDOUT_FILENO;
+    char * stderr_cp = STDERR_FILENO;
 
 	signal_handler();
 
