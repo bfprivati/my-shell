@@ -124,6 +124,7 @@ void signal_handler (){
 // }
 
 int create_process(char **params){
+    // SOMENTE PARA LS
     int pid = fork();
 
     if (pid == 0) {
@@ -159,7 +160,7 @@ int read_command() {
         params[i] = (char *) malloc(sizeof(strlen(token)));
         strcpy(params[i], token);
         token = strtok(NULL, " ");
-
+ 
         /*if( strcmp(params[i], '\n') == 0 ) {
             printf("ENTROU BARRA N \n\n\n");
             return 1;
@@ -167,11 +168,10 @@ int read_command() {
 
         if ( strcmp(params[i], "exit") == 0 ){
         // Sair do terminal OK
+            return -2;
 
-            return -2;            
         } else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios OK
-
             if ((token == NULL) || (token == "~")){
             	dir = chdir(getenv("HOME"));
             	if(dir != 0)//se retornar -1, ocorreu erro
@@ -189,16 +189,46 @@ int read_command() {
 
 	                i++;
 	            }
-            } else {
-                create_process(params);
-            }    
+            }     
+            //} else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
+            //     char *arquivo;
+            //     i++;
+            //     params[i] = (char *) malloc(sizeof(strlen(token)));
+            //     strcpy(params[i], arquivo);
+            //     token = strtok(NULL, " ");
+            //     printf("ARQUIVOOOOO %s", params[i]);
+
+            //     if (strcmp(params[i-1], ">") == 0) {
+            //         printf("ENTROU FUNC_OUT");
+
+            //         char * out = params[i];
+            //         int fdout = open(out, O_WRONLY | O_CREAT, 0);
+            //         dup2(fdout, 1);
+
+            //     } else if (strcmp(params[i], "<") == 0) {
+            //         //func_in(params, arquivo);
+            //         printf("ENTROU FUNC_IN");
+            //     } else if (strcmp(params[i], "2>") == 0) {
+            //         // func_error(params, arquivo);
+            //         printf("ENTROU FUNC_ERROR");
+            //     }
+            // }
+
+        } else {
+        // Criar processo com fork
+            create_process(params);
         }
+            
         i++;
     }
 
     // SE TEM PIPE, RETORNA ARRAY DE ARRAYS E USAR FORK OUTRO spawn_process(params, sizeof(params)/8);
     // SE NÃO TEM PIPE, USAR FORK NORMAL     create_process(params);
-   
+
+    params[i] = token;
+    
+
+ 
    return 1;
 }
 
@@ -266,59 +296,4 @@ void func_error(char *params[], char *out){
 
     return;
 }
-
-    /* BEGIN -------------------------- building arg_list -------------------------- 
-    // Counts pipes
-    char *token_p;
-    char tokenFullCommand[STR_MAX];
-    strcpy(tokenFullCommand, fullCommand);
-    int pipeCount = -1;
-    for(token_p = strtok(tokenFullCommand, "|"); token_p != NULL; token_p = strtok(NULL, "|"))
-      pipeCount++;
-
-    // Allocate the arg_list for pipes
-    char*** arg_list = (char***) malloc((pipeCount+1) * sizeof(char**));
-    // Allocate the command array
-    char** command = (char**) malloc((pipeCount+1) * sizeof(char*));
-
-    int i_command = 0;
-    strcpy(tokenFullCommand, fullCommand);
-    for(token_p = strtok(tokenFullCommand, "|"); token_p != NULL; token_p = strtok(NULL, "|")) {
-      command[i_command] = (char*) malloc(STR_MAX * sizeof(char));
-      strcpy(command[i_command], token_p);
-      i_command++;
-    }
-
-    i_command = 0;
-    strcpy(tokenFullCommand, fullCommand);
-    while(i_command <= pipeCount) {
-      // Counts tokens
-      char *token;
-      char tokenCommand[STR_MAX];
-      strcpy(tokenCommand, command[i_command]);
-      int argCount = 0;
-      for(token = strtok(tokenCommand, " "); token != NULL; token = strtok(NULL, " "))
-        argCount++;
-
-      if (i_command == 0) firstArgCount = argCount; // Store to use in "Change Dir" (CD) part
-
-      // Allocate the arg_list for commands
-      arg_list[i_command] = (char**) malloc((argCount+1) * sizeof(char*));
-
-      // Copies the tokens values to arg_list
-      int j_command = 0;
-      strcpy(tokenCommand, command[i_command]);
-      for(token = strtok(tokenCommand, " "); token != NULL; token = strtok(NULL, " ")) {
-        // Allocate the arg_list for arguments
-        arg_list[i_command][j_command] = (char*) malloc(STR_MAX * sizeof(char));
-        strcpy(arg_list[i_command][j_command], token);
-        j_command++;
-      }
-      arg_list[i_command][j_command] = NULL;
-      i_command++;
-    }
-    /* END -------------------------- building arg_list -------------------------- */
-
-
-
 */

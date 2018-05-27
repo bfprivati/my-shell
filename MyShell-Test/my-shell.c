@@ -14,9 +14,6 @@
 int main() {
   char command;
 
-  // char entrada = STDIN_FILENO;
-  // char saida = STDOUT_FILENO;
-
   while(1) {
     clear_input();
     //io_rdrct(entrada, saida);
