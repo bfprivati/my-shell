@@ -10,20 +10,6 @@ void clear_input() {
     return;
 }
 
-// void io_rdrct(entrada, saida){
-//     if (entrada != STDIN_FILENO) {
-//       dup2(entrada, STDIN_FILENO);
-//       close(entrada);
-//     }
-
-//     if (saida != STDOUT_FILENO) {
-//       dup2(saida, STDOUT_FILENO);
-//       close(saida);
-//     }
-
-//     return;
-// }
-
 void show_prompt(){
     int i;
     char * user;
@@ -84,6 +70,23 @@ void signal_handler (){
     	//ENTER
 }
 
+void io_rdrct(char *entrada, char *saida, char *error){
+
+    int fdin = open(entrada, O_RDONLY, 0);
+    int fdout = open(saida, O_WRONLY|O_APPEND, 0);
+    int fderror = open(error, O_WRONLY, 0);
+
+    dup2(fdin, 0);
+    dup2(fdout, 1);
+    dup2(fderror, 2);
+
+    close(fdin);
+    close(fdout);
+    close(fderror);
+
+    return;
+}
+
 // int spawn_process(char **params, int len) {
 //     // SOMENTE USAR QUANDO LS -LA | SORT | MORE
 //     // USAR ARRAY DE ARRAYS, TRATANDO | 
@@ -123,8 +126,10 @@ void signal_handler (){
 //     }
 // }
 
-int create_process(char **params){
+int create_process(char **params, char *entrada, char *saida, char *error){
     int pid = fork();
+
+    io_rdrct(entrada, saida, error);
 
     if (pid == 0) {
     // codigo do processo filho
@@ -147,6 +152,9 @@ int read_command() {
     char command[MAX_CMD_SIZE];
     char * token;
     char * params[MAX_ARR_SIZE];
+    char stdin_cp = STDIN_FILENO;
+    char stdout_cp = STDOUT_FILENO;
+    char stderr_cp = STDERR_FILENO;
 
 	signal_handler();
 
@@ -188,7 +196,7 @@ int read_command() {
 	            }
             }   
         } else {
-            create_process(params);
+            create_process(params, stdin_cp, stdout_cp, stderr_cp);
         } 
         i++;
     }
