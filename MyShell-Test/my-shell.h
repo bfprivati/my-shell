@@ -5,9 +5,9 @@
 #define in 0
 #define out 1
 
-void clear_input() {
+void clear_input(char *command) {
     fflush(stdin);
-    return;
+    memset(&command[0], 0, sizeof(command));
 }
 
 void show_prompt(){
@@ -89,7 +89,7 @@ void io_rdrct(char *entrada, char *saida, char *error){
 
 // int spawn_process(char **params, int len) {
 //     // SOMENTE USAR QUANDO LS -LA | SORT | MORE
-//     // USAR ARRAY DE ARRAYS, TRATANDO | 
+//     // USAR ARRAY DE ARRAYS, TRATANDO |
 //
 //     int i;
 //     int fd[2];
@@ -139,7 +139,7 @@ int create_process(char **params, char *entrada, char *saida, char *error){
         int res;
         waitpid(pid, &res, 0);
 
-        if (WIFEXITED(res) && (WEXITSTATUS(res)==0)) 
+        if (WIFEXITED(res) && (WEXITSTATUS(res)==0))
             return 1;
     }
 
@@ -147,24 +147,24 @@ int create_process(char **params, char *entrada, char *saida, char *error){
 }
 
 int read_command() {
-    int i, dir;
+    int i=0, dir;
     char cwdir[MAX_ARR_SIZE];
     char command[MAX_CMD_SIZE];
     char * token;
     char * params[MAX_ARR_SIZE];
-    char * stdin_cp = STDIN_FILENO;
-    char * stdout_cp = STDOUT_FILENO;
-    char * stderr_cp = STDERR_FILENO;
+    char * stdin_cp= (char*)(STDIN_FILENO);
+    char * stdout_cp = (char*)(STDOUT_FILENO);
+    char * stderr_cp = (char*)(STDERR_FILENO);
 
 	signal_handler();
+    clear_input(command);
+
 
     // ler comando e tirar espaços
     fflush(stdin);
     /*scanf*/gets(/*" %[^\n]s", */command);
-    fflush(stdin);
     token = strtok(command, " ");
 
-    i = 0;
     while(token != NULL) {
         params[i] = (char *) malloc(sizeof(strlen(token)));
         strcpy(params[i], token);
@@ -173,7 +173,7 @@ int read_command() {
         if ( strcmp(params[i], "exit") == 0 ){
         // Sair do terminal OK
 
-            return -2;            
+            return -2;
         } else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios OK
 
@@ -187,23 +187,45 @@ int read_command() {
 	                params[i] = (char *) malloc(sizeof(strlen(token)));//aloca...
 	                strcpy(params[i], token);//Copia token
 	                token = strtok(NULL, " ");
-	                
+
 	                dir = chdir(params[i]);
                     if(dir != 0)//se retornar -1, ocorreu erro
 	                    fprintf(stderr, "cd: '%s' file or directory not found\n", params[i]);
 
 	                i++;
 	            }
-            }   
-        } else {
-            create_process(params, stdin_cp, stdout_cp, stderr_cp);
-        } 
+            }
+        }  else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
+            printf("ENTROU AQUI\n\n");
+
+            i++;
+            params[i] = (char *) malloc(sizeof(strlen(token)));
+            strcpy(params[i], token);
+            token = strtok(NULL, " ");
+
+            printf("parametro %d: %s", i, params[i]);
+            // printf("stdin: %c", stdout_cp);
+            // printf("stdout: %c", stdin_cp);
+            // printf("stderr: %c", stderr_cp);
+
+            if((strcmp(params[i], ">") == 0)){
+                i++;
+                strcpy(stdout_cp, params[i]);
+            } else if ((strcmp(params[i], "<") == 0)){
+                i++;
+                strcpy(stdin_cp, params[i]);
+            } else if ((strcmp(params[i], "2>") == 0)) {
+                i++;
+                strcpy(stderr_cp, params[i]);
+            }
+        }
         i++;
     }
+    create_process(params, stdin_cp, stdout_cp, stderr_cp);
 
     // SE TEM PIPE, RETORNA ARRAY DE ARRAYS E USAR FORK OUTRO spawn_process(params, sizeof(params)/8);
     // SE NÃO TEM PIPE, USAR FORK NORMAL     create_process(params);
-   
+
    return 1;
 }
 
@@ -272,7 +294,7 @@ void func_error(char *params[], char *out){
     return;
 }
 
-    /* BEGIN -------------------------- building arg_list -------------------------- 
+    /* BEGIN -------------------------- building arg_list --------------------------
     // Counts pipes
     char *token_p;
     char tokenFullCommand[STR_MAX];
