@@ -5,10 +5,10 @@
 #define in 0
 #define out 1
 
-void clear_input(char *command) {
-    fflush(stdin);
-    memset(&command[0], 0, sizeof(command));
-}
+// void clear_input(char *command[]) {
+//     fflush(stdin);
+//     memset(command[0], 0, sizeof(command));
+// }
 
 void show_prompt(){
     int i;
@@ -87,49 +87,8 @@ void io_rdrct(char *entrada, char *saida, char *error){
     return;
 }
 
-// int spawn_process(char **params, int len) {
-//     // SOMENTE USAR QUANDO LS -LA | SORT | MORE
-//     // USAR ARRAY DE ARRAYS, TRATANDO |
-//
-//     int i;
-//     int fd[2];
-//     int pid;
-//     for(i=0; i < len -1 ; i++) {
-//         pipe(fd);
-//         pid = fork();
-//         if (pid == 0) {
-//             // filho
-//             dup2(fd[out],out);
-//             close(fd[out]);
-//             close(fd[in]);
-//             execvp(params[i][0],params[i]);
-//         } else {
-//             //pai
-//             dup2(fd[in],in);
-//             close(fd[out]);
-//             close(fd[in]);
-//         }
-//     }
-//     pid = fork();
-//     if (pid == 0) {
-//         // flho
-//         execvp(params[len-1][0],params[len-1]);
-//     } else {
-//         // pai
-//         int res;
-//         while (1) {
-//         pid = wait(&res);
-//         if (pid == -1)
-//             break;
-//         printf("Processo %d encerrou.\n", pid);
-//         }
-//     }
-// }
-
 int create_process(char **params, char *entrada, char *saida, char *error){
     int pid = fork();
-
-    io_rdrct(entrada, saida, error);
 
     if (pid == 0) {
     // codigo do processo filho
@@ -157,12 +116,23 @@ int read_command() {
     char * stderr_cp = (char*)(STDERR_FILENO);
 
 	signal_handler();
-    clear_input(command);
 
+    /*if( (stdin_cp != (char*)STDIN_FILENO) || (stdout_cp != (char*)STDOUT_FILENO) || (stdout_cp != (char*)STDERR_FILENO) ){
+        printf("ENTROU VERIFICAOAÇÃO\n\n\n");
+
+        printf("stdin: %s", stdin_cp);
+        printf("stdout: %s", stdout_cp);
+        printf("stderr: %s", stderr_cp);
+
+        stdin_cp = (char*)(STDIN_FILENO);
+        stdout_cp = (char*)(STDOUT_FILENO);
+        stderr_cp = (char*)(STDERR_FILENO);
+        io_rdrct(stdin_cp, stdout_cp, stderr_cp);
+    }*/
 
     // ler comando e tirar espaços
     fflush(stdin);
-    /*scanf*/gets(/*" %[^\n]s", */command);
+    gets(command);
     token = strtok(command, " ");
 
     while(token != NULL) {
@@ -204,30 +174,81 @@ int read_command() {
             token = strtok(NULL, " ");
 
             printf("parametro %d: %s", i, params[i]);
-            // printf("stdin: %c", stdout_cp);
-            // printf("stdout: %c", stdin_cp);
-            // printf("stderr: %c", stderr_cp);
 
-            if((strcmp(params[i], ">") == 0)){
-                i++;
+
+            if((strcmp(params[i-1], ">") == 0)){
+                //printf("4 . PARAMETRO %d: %s\n", i, params[i]);
+                stdout_cp = (char *) malloc(sizeof(strlen(params[i])));
                 strcpy(stdout_cp, params[i]);
-            } else if ((strcmp(params[i], "<") == 0)){
-                i++;
+            } else if ((strcmp(params[i-1], "<") == 0)){
+                stdin_cp = (char *) malloc(sizeof(strlen(params[i])));
                 strcpy(stdin_cp, params[i]);
             } else if ((strcmp(params[i], "2>") == 0)) {
-                i++;
+                stderr_cp = (char *) malloc(sizeof(strlen(params[i])));
                 strcpy(stderr_cp, params[i]);
             }
+            io_rdrct(stdin_cp, stdout_cp, stderr_cp);
+            params[i-1] = NULL;
         }
+
         i++;
     }
+    printf("****VEIO AQUI****\n\n");
     create_process(params, stdin_cp, stdout_cp, stderr_cp);
+    // free(params);
 
     // SE TEM PIPE, RETORNA ARRAY DE ARRAYS E USAR FORK OUTRO spawn_process(params, sizeof(params)/8);
-    // SE NÃO TEM PIPE, USAR FORK NORMAL     create_process(params);
 
    return 1;
 }
+
+
+
+
+
+
+
+
+
+// int spawn_process(char **params, int len) {
+//     // SOMENTE USAR QUANDO LS -LA | SORT | MORE
+//     // USAR ARRAY DE ARRAYS, TRATANDO |
+//
+//     int i;
+//     int fd[2];
+//     int pid;
+//     for(i=0; i < len -1 ; i++) {
+//         pipe(fd);
+//         pid = fork();
+//         if (pid == 0) {
+//             // filho
+//             dup2(fd[out],out);
+//             close(fd[out]);
+//             close(fd[in]);
+//             execvp(params[i][0],params[i]);
+//         } else {
+//             //pai
+//             dup2(fd[in],in);
+//             close(fd[out]);
+//             close(fd[in]);
+//         }
+//     }
+//     pid = fork();
+//     if (pid == 0) {
+//         // flho
+//         execvp(params[len-1][0],params[len-1]);
+//     } else {
+//         // pai
+//         int res;
+//         while (1) {
+//         pid = wait(&res);
+//         if (pid == -1)
+//             break;
+//         printf("Processo %d encerrou.\n", pid);
+//         }
+//     }
+// }
+
 
 /*
 // >
