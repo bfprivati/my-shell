@@ -5,10 +5,12 @@
 #define in 0
 #define out 1
 
-// void clear_input(char *command[]) {
-//     fflush(stdin);
-//     memset(command[0], 0, sizeof(command));
-// }
+int redir_out = 0; /* Se (>), a variável redir_out será setada para 1    */
+int redir_in = 0;  /* Se (<), a variável redir_in será setada para 1     */
+int redir_err = 0; /* Se (2>), a variável redir_err será setada para 1   */
+int fpin, fpout, fperr; /* fp -> file pointer */
+fpos_t pos_in, pos_out; /* posicao do buffer de stdin e stdout */
+
 
 void show_prompt(){
     int i;
@@ -70,6 +72,38 @@ void signal_handler (){
     	//ENTER
 }
 
+void redir (){
+	// Reseta STDOUT
+	if (redir_out != 0 ) {
+		fflush(stdout); //limpou o que tinha no arquivo
+		dup2(fpout, fileno(stdout)); //voltou o stdout para o original dele
+		close (fpout);//fechou o ponteiro temporario
+		clearerr (stdout);//limpou o erro (caso precise)
+		fsetpos (stdout, &pos_out);//voltou para a posicao que estava antes
+	}
+	// Reseta STDIN
+	if (redir_in != 0 ) {
+		fflush(stdin);
+		dup2(fpin, fileno(stdin));
+		close(fpin);
+		clearerr(stdin);
+		fsetpos(stdin, &pos_in);
+	}
+	// Reseta STDERR
+	if (redir_err != 0 ){
+		fflush(stderr);
+		dup2(fperr, fileno(stderr));
+		close(fperr);
+		clearerr(stderr);
+		fsetpos(stderr, &pos_in);
+	}
+
+	//Reseta as flags
+	redir_out=0;
+	redir_in=0;
+	redir_err=0;
+}
+
 void io_rdrct(char *entrada, char *saida, char *error){
 
     int fdin = open(entrada, O_RDONLY, 0);
@@ -115,16 +149,8 @@ int read_command() {
     char * stdout_cp = (char*)(STDOUT_FILENO);
     char * stderr_cp = (char*)(STDERR_FILENO);
 
-    // redirecionar para saída/entrada padrão
-    //char * stdin_cp1= (char*)(STDIN_FILENO);
-    //char * stdout_cp1 = (char*)(STDOUT_FILENO);
-    //char * stderr_cp1 = (char*)(STDERR_FILENO);
-    //io_rdrct((char)STDIN_FILENO, (char)STDOUT_FILENO, (char)STDERR_FILENO);
-
-
     // ler comando e tirar espaços
 	signal_handler();
-    fflush(stdin);
     gets(command);
     token = strtok(command, " ");
 
@@ -171,12 +197,15 @@ int read_command() {
 
             if((strcmp(params[i-1], ">") == 0)){
                 //printf("4 . PARAMETRO %d: %s\n", i, params[i]);
+                redir_out = 1;
                 stdout_cp = (char *) malloc(sizeof(strlen(params[i])));
                 strcpy(stdout_cp, params[i]);
             } else if ((strcmp(params[i-1], "<") == 0)){
+                redir_in = 1;
                 stdin_cp = (char *) malloc(sizeof(strlen(params[i])));
                 strcpy(stdin_cp, params[i]);
             } else if ((strcmp(params[i], "2>") == 0)) {
+                redir_err = 1;
                 stderr_cp = (char *) malloc(sizeof(strlen(params[i])));
                 strcpy(stderr_cp, params[i]);
             }
@@ -188,20 +217,12 @@ int read_command() {
     }
     printf("****VEIO AQUI****\n\n");
     create_process(params, stdin_cp, stdout_cp, stderr_cp);
-    // free(params);
 
-    // SE TEM PIPE, RETORNA ARRAY DE ARRAYS E USAR FORK OUTRO spawn_process(params, sizeof(params)/8);
-
-   return 1;
+    return 1;
 }
 
 
-
-
-
-
-
-
+    // SE TEM PIPE, RETORNA ARRAY DE ARRAYS E USAR FORK OUTRO spawn_process(params, sizeof(params)/8);
 
 // int spawn_process(char **params, int len) {
 //     // SOMENTE USAR QUANDO LS -LA | SORT | MORE
@@ -241,6 +262,61 @@ int read_command() {
 //         }
 //     }
 // }
+
+
+    /* BEGIN -------------------------- building arg_list --------------------------
+    // Counts pipes
+    char *token_p;
+    char tokenFullCommand[STR_MAX];
+    strcpy(tokenFullCommand, fullCommand);
+    int pipeCount = -1;
+    for(token_p = strtok(tokenFullCommand, "|"); token_p != NULL; token_p = strtok(NULL, "|"))
+      pipeCount++;
+
+    // Allocate the arg_list for pipes
+    char*** arg_list = (char***) malloc((pipeCount+1) * sizeof(char**));
+    // Allocate the command array
+    char** command = (char**) malloc((pipeCount+1) * sizeof(char*));
+
+    int i_command = 0;
+    strcpy(tokenFullCommand, fullCommand);
+    for(token_p = strtok(tokenFullCommand, "|"); token_p != NULL; token_p = strtok(NULL, "|")) {
+      command[i_command] = (char*) malloc(STR_MAX * sizeof(char));
+      strcpy(command[i_command], token_p);
+      i_command++;
+    }
+
+    i_command = 0;
+    strcpy(tokenFullCommand, fullCommand);
+    while(i_command <= pipeCount) {
+      // Counts tokens
+      char *token;
+      char tokenCommand[STR_MAX];
+      strcpy(tokenCommand, command[i_command]);
+      int argCount = 0;
+      for(token = strtok(tokenCommand, " "); token != NULL; token = strtok(NULL, " "))
+        argCount++;
+
+      if (i_command == 0) firstArgCount = argCount; // Store to use in "Change Dir" (CD) part
+
+      // Allocate the arg_list for commands
+      arg_list[i_command] = (char**) malloc((argCount+1) * sizeof(char*));
+
+      // Copies the tokens values to arg_list
+      int j_command = 0;
+      strcpy(tokenCommand, command[i_command]);
+      for(token = strtok(tokenCommand, " "); token != NULL; token = strtok(NULL, " ")) {
+        // Allocate the arg_list for arguments
+        arg_list[i_command][j_command] = (char*) malloc(STR_MAX * sizeof(char));
+        strcpy(arg_list[i_command][j_command], token);
+        j_command++;
+      }
+      arg_list[i_command][j_command] = NULL;
+      i_command++;
+    }
+    /* END -------------------------- building arg_list -------------------------- */
+
+
 
 
 /*
@@ -307,58 +383,3 @@ void func_error(char *params[], char *out){
 
     return;
 }
-
-    /* BEGIN -------------------------- building arg_list --------------------------
-    // Counts pipes
-    char *token_p;
-    char tokenFullCommand[STR_MAX];
-    strcpy(tokenFullCommand, fullCommand);
-    int pipeCount = -1;
-    for(token_p = strtok(tokenFullCommand, "|"); token_p != NULL; token_p = strtok(NULL, "|"))
-      pipeCount++;
-
-    // Allocate the arg_list for pipes
-    char*** arg_list = (char***) malloc((pipeCount+1) * sizeof(char**));
-    // Allocate the command array
-    char** command = (char**) malloc((pipeCount+1) * sizeof(char*));
-
-    int i_command = 0;
-    strcpy(tokenFullCommand, fullCommand);
-    for(token_p = strtok(tokenFullCommand, "|"); token_p != NULL; token_p = strtok(NULL, "|")) {
-      command[i_command] = (char*) malloc(STR_MAX * sizeof(char));
-      strcpy(command[i_command], token_p);
-      i_command++;
-    }
-
-    i_command = 0;
-    strcpy(tokenFullCommand, fullCommand);
-    while(i_command <= pipeCount) {
-      // Counts tokens
-      char *token;
-      char tokenCommand[STR_MAX];
-      strcpy(tokenCommand, command[i_command]);
-      int argCount = 0;
-      for(token = strtok(tokenCommand, " "); token != NULL; token = strtok(NULL, " "))
-        argCount++;
-
-      if (i_command == 0) firstArgCount = argCount; // Store to use in "Change Dir" (CD) part
-
-      // Allocate the arg_list for commands
-      arg_list[i_command] = (char**) malloc((argCount+1) * sizeof(char*));
-
-      // Copies the tokens values to arg_list
-      int j_command = 0;
-      strcpy(tokenCommand, command[i_command]);
-      for(token = strtok(tokenCommand, " "); token != NULL; token = strtok(NULL, " ")) {
-        // Allocate the arg_list for arguments
-        arg_list[i_command][j_command] = (char*) malloc(STR_MAX * sizeof(char));
-        strcpy(arg_list[i_command][j_command], token);
-        j_command++;
-      }
-      arg_list[i_command][j_command] = NULL;
-      i_command++;
-    }
-    /* END -------------------------- building arg_list -------------------------- */
-
-
-

@@ -15,12 +15,20 @@ int main() {
   char command;
 
   while(1) {
-  	int fdstd[3];
+    fflush(stdin);
+		fgetpos(stdin, &pos_in);
+		fpin = dup(fileno(stdin));
+    
+    fflush(stdout);
+		fgetpos(stdout, &pos_out);
+		fpout = dup(fileno(stdout));
+    
+		fflush(stderr);
+		fgetpos(stdout, &pos_out);
+		fperr = dup(fileno(stderr));
 
-    fdstd[0] = dup(fileno(stdin));
-    fdstd[1] = dup(fileno(stdout));
-    fdstd[2] = dup(fileno(stderr));
 
+    redir();
     show_prompt();
     command = read_command();
     if (command == -2)
