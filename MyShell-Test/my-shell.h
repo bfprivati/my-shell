@@ -117,10 +117,10 @@ int read_command() {
 
 
     // redirecionar para saída/entrada padrão
-    char * stdin_cp1= (char*)(STDIN_FILENO);
-    char * stdout_cp1 = (char*)(STDOUT_FILENO);
-    char * stderr_cp1 = (char*)(STDERR_FILENO);
-    io_rdrct(STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
+    //char * stdin_cp1= (char*)(STDIN_FILENO);
+    //char * stdout_cp1 = (char*)(STDOUT_FILENO);
+    //char * stderr_cp1 = (char*)(STDERR_FILENO);
+    //io_rdrct((char)STDIN_FILENO, (char)STDOUT_FILENO, (char)STDERR_FILENO);
 
 
     // ler comando e tirar espaços
