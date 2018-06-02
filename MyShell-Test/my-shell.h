@@ -222,6 +222,12 @@ int read_command() {
 }
 
 
+
+
+/* --------------------------------------------------------------------------------------------------------------------------*/
+
+
+
     // SE TEM PIPE, RETORNA ARRAY DE ARRAYS E USAR FORK OUTRO spawn_process(params, sizeof(params)/8);
 
 // int spawn_process(char **params, int len) {
@@ -315,8 +321,6 @@ int read_command() {
       i_command++;
     }
     /* END -------------------------- building arg_list -------------------------- */
-
-
 
 
 /*
