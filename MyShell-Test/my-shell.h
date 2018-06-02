@@ -115,22 +115,16 @@ int read_command() {
     char * stdout_cp = (char*)(STDOUT_FILENO);
     char * stderr_cp = (char*)(STDERR_FILENO);
 
-	signal_handler();
 
-    /*if( (stdin_cp != (char*)STDIN_FILENO) || (stdout_cp != (char*)STDOUT_FILENO) || (stdout_cp != (char*)STDERR_FILENO) ){
-        printf("ENTROU VERIFICAOAÇÃO\n\n\n");
+    // redirecionar para saída/entrada padrão
+    char * stdin_cp1= (char*)(STDIN_FILENO);
+    char * stdout_cp1 = (char*)(STDOUT_FILENO);
+    char * stderr_cp1 = (char*)(STDERR_FILENO);
+    io_rdrct(STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
 
-        printf("stdin: %s", stdin_cp);
-        printf("stdout: %s", stdout_cp);
-        printf("stderr: %s", stderr_cp);
-
-        stdin_cp = (char*)(STDIN_FILENO);
-        stdout_cp = (char*)(STDOUT_FILENO);
-        stderr_cp = (char*)(STDERR_FILENO);
-        io_rdrct(stdin_cp, stdout_cp, stderr_cp);
-    }*/
 
     // ler comando e tirar espaços
+	signal_handler();
     fflush(stdin);
     gets(command);
     token = strtok(command, " ");
