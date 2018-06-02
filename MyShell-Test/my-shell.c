@@ -15,7 +15,12 @@ int main() {
   char command;
 
   while(1) {
-    io_rdrct((char)STDIN_FILENO, (char)STDOUT_FILENO, (char)STDERR_FILENO);
+  	int fdstd[3];
+
+    fdstd[0] = dup(fileno(stdin));
+    fdstd[1] = dup(fileno(stdout));
+    fdstd[2] = dup(fileno(stderr));
+
     show_prompt();
     command = read_command();
     if (command == -2)

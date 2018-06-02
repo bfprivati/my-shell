@@ -115,7 +115,6 @@ int read_command() {
     char * stdout_cp = (char*)(STDOUT_FILENO);
     char * stderr_cp = (char*)(STDERR_FILENO);
 
-
     // redirecionar para saída/entrada padrão
     //char * stdin_cp1= (char*)(STDIN_FILENO);
     //char * stdout_cp1 = (char*)(STDOUT_FILENO);
