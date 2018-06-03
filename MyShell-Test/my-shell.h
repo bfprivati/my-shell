@@ -140,7 +140,7 @@ int create_process(char **params, char *entrada, char *saida, char *error){
 }
 
 int read_command() {
-    int i=0, dir;
+    int i=0, j=0, dir;
     char cwdir[MAX_ARR_SIZE];
     char command[MAX_CMD_SIZE];
     char * token;
@@ -149,9 +149,20 @@ int read_command() {
     char * stdout_cp = (char*)(STDOUT_FILENO);
     char * stderr_cp = (char*)(STDERR_FILENO);
 
+    //Zerar string
+	for (j=0; j< MAX_CMD_SIZE; j++){
+		command[j] = '\0';
+	}
+	for (j=0; j< MAX_ARR_SIZE; j++){
+		params[j] = '\0';
+	}
+
     // ler comando e tirar espaços
-	signal_handler();
-    gets(command);
+    fflush(stdin);
+    fgets(command, sizeof(char) * MAX_ARR_SIZE, stdin );
+    if(command[strlen(command) - 1] == '\n')
+        command[strlen(command) - 1] = '\0';
+    fflush(stdin);
     token = strtok(command, " ");
 
     while(token != NULL) {
@@ -184,6 +195,11 @@ int read_command() {
 	                i++;
 	            }
             }
+
+            for (j=0; j< MAX_CMD_SIZE; j++){
+    			command[j] = '\0';
+                params[j] = '\0';
+			}
         }  else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
             printf("ENTROU AQUI\n\n");
 
