@@ -88,7 +88,7 @@ void io_rdrct(char *entrada, char *saida, char *error){
 }
 
 int create_process(char **params, char *arquivo){
-    int fd;
+    int fd, error;
     int pid = fork();
 
     if (pid == 0) {
