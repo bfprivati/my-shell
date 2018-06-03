@@ -70,23 +70,6 @@ void signal_handler (){
     	//ENTER
 }
 
-void io_rdrct(char *entrada, char *saida, char *error){
-
-    int fdin = open(entrada, O_RDONLY, 0);
-    int fdout = open(saida, O_WRONLY|O_APPEND, 0);
-    int fderror = open(error, O_WRONLY, 0);
-
-    dup2(fdin, 0);
-    dup2(fdout, 1);
-    dup2(fderror, 2);
-
-    close(fdin);
-    close(fdout);
-    close(fderror);
-
-    return;
-}
-
 int create_process(char **params, char *arquivo){
     int fd, error;
     int pid = fork();
@@ -94,7 +77,7 @@ int create_process(char **params, char *arquivo){
     if (pid == 0) {
     // codigo do processo filho
         if(redir_in == 1 && arquivo != NULL){
-            fd = open(arquivo, O_WRONLY | O_CREAT, 0777);
+            fd = open(arquivo, O_RDONLY, 0777);
             dup2(fd, 0);
         }
         else if(redir_out == 1 && arquivo != NULL){
@@ -107,10 +90,11 @@ int create_process(char **params, char *arquivo){
         }
 
         execvp(params[0], params);
-        //error = execvp(params[0], params);
+        error = execvp(params[0], params);
         close(fd);
 
         if(error != NULL){
+            printf("ENTROU IF ERROR \n");
             printf("%s\n", strerror(errno));
         }
         return 0;
