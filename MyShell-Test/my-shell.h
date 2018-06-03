@@ -8,8 +8,6 @@
 int redir_out = 0; /* Se (>), a variável redir_out será setada para 1    */
 int redir_in = 0;  /* Se (<), a variável redir_in será setada para 1     */
 int redir_err = 0; /* Se (2>), a variável redir_err será setada para 1   */
-int fpin, fpout, fperr; /* fp -> file pointer */
-fpos_t pos_in, pos_out; /* posicao do buffer de stdin e stdout */
 
 
 void show_prompt(){
@@ -72,38 +70,6 @@ void signal_handler (){
     	//ENTER
 }
 
-void redir (){
-	// Reseta STDOUT
-	if (redir_out != 0 ) {
-		fflush(stdout); //limpou o que tinha no arquivo
-		dup2(fpout, fileno(stdout)); //voltou o stdout para o original dele
-		close (fpout);//fechou o ponteiro temporario
-		clearerr (stdout);//limpou o erro (caso precise)
-		fsetpos (stdout, &pos_out);//voltou para a posicao que estava antes
-	}
-	// Reseta STDIN
-	if (redir_in != 0 ) {
-		fflush(stdin);
-		dup2(fpin, fileno(stdin));
-		close(fpin);
-		clearerr(stdin);
-		fsetpos(stdin, &pos_in);
-	}
-	// Reseta STDERR
-	if (redir_err != 0 ){
-		fflush(stderr);
-		dup2(fperr, fileno(stderr));
-		close(fperr);
-		clearerr(stderr);
-		fsetpos(stderr, &pos_in);
-	}
-
-	//Reseta as flags
-	redir_out=0;
-	redir_in=0;
-	redir_err=0;
-}
-
 void io_rdrct(char *entrada, char *saida, char *error){
 
     int fdin = open(entrada, O_RDONLY, 0);
@@ -121,17 +87,45 @@ void io_rdrct(char *entrada, char *saida, char *error){
     return;
 }
 
-int create_process(char **params, char *entrada, char *saida, char *error){
+int create_process(char **params, char *arquivo){
+    int fd;
     int pid = fork();
 
     if (pid == 0) {
     // codigo do processo filho
+        if(redir_in == 1 && file != NULL){
+            fd = open(arquivo, O_WRONLY | O_CREAT, 0777);
+            dup2(fd, 0);
+        }
+        else if(redir_out == 1 && file != NULL){
+            fd = open(arquivo, O_WRONLY | O_CREAT, 0777);
+            dup2(fd, 1);
+        }
+        else if(redir_err == 1){
+            fd = open(arquivo, O_WRONLY | O_CREAT, 0777);
+            dup2(fd, 2);
+        }
+
         execvp(params[0], params);
+        //error = execvp(params[0], params);
+        close(fd);
+
+        if(error != NULL){
+            printf("%s\n", strerror(errno));
+        }
+        return 0;
+
     } else {
     // codigo do processo pai
         int res;
         waitpid(pid, &res, 0);
 
+        if( redir_out == 1 || redir_in == 1 || redir_err == 1 ){
+            redir_out = 0;
+            redir_in = 0;
+            redir_err = 0;
+        }
+        
         if (WIFEXITED(res) && (WEXITSTATUS(res)==0))
             return 1;
     }
@@ -145,9 +139,7 @@ int read_command() {
     char command[MAX_CMD_SIZE];
     char * token;
     char * params[MAX_ARR_SIZE];
-    char * stdin_cp= (char*)(STDIN_FILENO);
-    char * stdout_cp = (char*)(STDOUT_FILENO);
-    char * stderr_cp = (char*)(STDERR_FILENO);
+    char * arquivo = NULL;
 
     //Zerar string
 	for (j=0; j< MAX_CMD_SIZE; j++){
@@ -174,7 +166,8 @@ int read_command() {
         // Sair do terminal OK
 
             return -2;
-        } else if (strcmp(params[i], "cd") == 0){
+        } 
+        else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios OK
 
             if ((token == NULL) || (token == "~")){
@@ -200,8 +193,20 @@ int read_command() {
     			command[j] = '\0';
                 params[j] = '\0';
 			}
-        }  else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
+        }  
+        else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
+        // Redirecionar arquivos
             printf("ENTROU AQUI\n\n");
+            
+            if((strcmp(params[i], ">") == 0)){
+                redir_out = 1;
+            } 
+            else if ((strcmp(params[i-1], "<") == 0)){
+                redir_in = 1;
+            } 
+            else if ((strcmp(params[i], "2>") == 0)) {
+                redir_err = 1;
+            }
 
             i++;
             params[i] = (char *) malloc(sizeof(strlen(token)));
@@ -209,30 +214,16 @@ int read_command() {
             token = strtok(NULL, " ");
 
             printf("parametro %d: %s", i, params[i]);
-
-
-            if((strcmp(params[i-1], ">") == 0)){
-                //printf("4 . PARAMETRO %d: %s\n", i, params[i]);
-                redir_out = 1;
-                stdout_cp = (char *) malloc(sizeof(strlen(params[i])));
-                strcpy(stdout_cp, params[i]);
-            } else if ((strcmp(params[i-1], "<") == 0)){
-                redir_in = 1;
-                stdin_cp = (char *) malloc(sizeof(strlen(params[i])));
-                strcpy(stdin_cp, params[i]);
-            } else if ((strcmp(params[i], "2>") == 0)) {
-                redir_err = 1;
-                stderr_cp = (char *) malloc(sizeof(strlen(params[i])));
-                strcpy(stderr_cp, params[i]);
-            }
-            io_rdrct(stdin_cp, stdout_cp, stderr_cp);
+            arquivo = (char *) malloc(sizeof(strlen(params[i])));
+            strcpy(arquivo, params[i]);
+    
             params[i-1] = NULL;
         }
 
         i++;
     }
     printf("****VEIO AQUI****\n\n");
-    create_process(params, stdin_cp, stdout_cp, stderr_cp);
+    create_process(params, arquivo);
 
     return 1;
 }

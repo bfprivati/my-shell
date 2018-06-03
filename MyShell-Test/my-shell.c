@@ -12,22 +12,15 @@
 
 
 int main() {
+  int p_in, p_out, p_err;
   char command;
-
-  fflush(stdin);
-  fgetpos(stdin, &pos_in);
-  fpin = dup(fileno(stdin));
-
-  fflush(stdout);
-  fgetpos(stdout, &pos_out);
-  fpout = dup(fileno(stdout));
-
-  fflush(stderr);
-  fgetpos(stdout, &pos_out);
-  fperr = dup(fileno(stderr));
-
+  
   while(1) {
-    redir();
+    // Redirecionar para saída/entrada padrão
+    p_in = dup(0);
+    p_out = dup(1);
+    p_err = dup(2);
+    
     show_prompt();
     command = read_command();
     if (command == -2)
