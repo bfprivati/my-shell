@@ -93,11 +93,11 @@ int create_process(char **params, char *arquivo){
 
     if (pid == 0) {
     // codigo do processo filho
-        if(redir_in == 1 && file != NULL){
+        if(redir_in == 1 && arquivo != NULL){
             fd = open(arquivo, O_WRONLY | O_CREAT, 0777);
             dup2(fd, 0);
         }
-        else if(redir_out == 1 && file != NULL){
+        else if(redir_out == 1 && arquivo != NULL){
             fd = open(arquivo, O_WRONLY | O_CREAT, 0777);
             dup2(fd, 1);
         }
