@@ -22,9 +22,9 @@ int main() {
     p_err = dup(2);
     
     show_prompt();
-    command = read_command();
-    if (command == -2)
-      exit(0);
+    read_command();
+    // if (command == -2)
+    //   exit(0);
   }
 
   return 0;

@@ -1,15 +1,43 @@
 #define MAX_ARR_SIZE 1024
 #define MAX_CMD_SIZE 1024
+#define MAX_LIST_SIZE 1024
+#define MAX_PIPE_SIZ 24         //variável string do PIPE
 #define ANSI_ESCAPE_SEQUENCE(EscapeSeq)   "\33[" EscapeSeq
-#define CTRLL 0xOC
 #define in 0
 #define out 1
+
+#define ANSI_COLOR_RED      "\x1b[31m"
+#define ANSI_COLOR_GREEN    "\x1b[32m"
+#define ANSI_COLOR_YELLOW   "\x1b[33m"
+#define ANSI_COLOR_BLUE     "\x1b[34m"
+#define ANSI_COLOR_MAGENTA  "\x1b[35m"
+#define ANSI_COLOR_CYAN     "\x1b[36m"
+#define ANSI_COLOR_RESET    "\x1b[0m"
+#define BOLD "\x1b[1m"
 
 int redir_out = 0; /* Se (>), a variável redir_out será setada para 1    */
 int redir_in = 0;  /* Se (<), a variável redir_in será setada para 1     */
 int redir_err = 0; /* Se (2>), a variável redir_err será setada para 1   */
+int cmd = 0;
+int size_command_list;
+char* command_list[MAX_ARR_SIZE];
 
 
+// char insert_command_list(char ** params, int size_command_list){
+//     command_list[size_command_list] = params;
+// }
+
+// void print_last_command(){
+//     int i = 0, j=0;
+
+//     for (j= size_command_list; j > size_command_list; j--){
+//         printf ("%c ", *command_list[size_command_list]);
+//     }
+// }
+
+/* --------------------------------------------------------------------- */
+
+// Mostrar terminal
 void show_prompt(){
     int i;
     char * user;
@@ -35,7 +63,7 @@ void show_prompt(){
     if( strcmp(params[i], "home") == 0 )
         params[i] = "~";
 
-    printf("%s@%s %s", user, host, params[0]);
+    printf("%s%s%s@%s%s:%s%s%s%s", BOLD, ANSI_COLOR_GREEN, user, host, BOLD, ANSI_COLOR_RED, ANSI_COLOR_BLUE, params[0], ANSI_COLOR_RESET);
     i++;
 
     while(token != NULL) {
@@ -45,7 +73,7 @@ void show_prompt(){
         if ( strcmp(params[i], user) == 0 )
             params[i] = "";
 
-        printf("%s/", params[i]);
+        printf("%s%s%s/%s", BOLD, ANSI_COLOR_BLUE, params[i], ANSI_COLOR_RESET);
         i++;
     }
         printf(" $ ");
@@ -56,6 +84,7 @@ void tratar_signal (int signum){
 	printf("\n");
 }
 
+//Trata CTRLC, CTRLV E KILL
 void signal_handler (){
     signal(SIGHUP, SIG_IGN);    // bloquear KILL
     signal(SIGINT, SIG_IGN);    // bloquear CTRLC
@@ -67,9 +96,67 @@ void signal_handler (){
 
 	sigaction(SIGINT, &new_action, NULL); 	//CTRL+C
 	sigaction(SIGTSTP, &new_action, NULL); 	//CTRL+Z
-    	//ENTER
 }
 
+//Trata comandos com pipe " | "
+int spawn_process(char *params[MAX_PIPE_SIZ][MAX_PIPE_SIZ], int len) {
+    // SOMENTE USAR QUANDO LS -LA | SORT | MORE
+    // USAR ARRAY DE ARRAYS, TRATANDO |
+    printf("\nEntrou no spawn_process\n");
+
+    int i;
+    int fd[2];
+    int pid;
+    int pipe_count;
+    pipe_count = 0;
+    for(i=0; i < len -1 ; i++) {
+        //printf("Entrou no for\n");
+        pipe(fd);
+        pid = fork();
+        if (pid == 0) {
+            //printf("Entrou no for - filho1\n");
+            // filho
+            dup2(fd[out],out);
+            close(fd[out]);
+            close(fd[in]);
+            execvp(params[i][0],params[i]);
+        } else {
+            //printf("Entrou no for - pai\n");
+            //pai
+            dup2(fd[in],in);
+            close(fd[out]);
+            close(fd[in]);
+        }
+    }
+
+    pid = fork();
+    if (pid == 0) {
+        // flho
+    //    printf("Entrou no filho\n");
+        execvp(params[len-1][0],params[len-1]);
+    } else {
+      //  printf("Entrou no pai\n");
+        // pai
+        //int res;
+        /*while (pipe_count < len) {
+            printf("Entrou no while?\n");
+            pid = wait(&res);
+
+            //if (pid == -1)
+            //if (WIFEXITED(res) && (WEXITSTATUS(res)==0))
+                //break;
+            printf("Processo %d encerrou.\n", pid);
+            pipe_count ++;
+        }*/
+        wait(NULL);
+        wait(NULL);
+        wait(NULL);
+        dup2(in, STDIN_FILENO);
+    }
+    printf("retornar\n");
+}
+
+//cria processos para diversos comandos
 int create_process(char **params, char *arquivo){
     int fd, error;
     int pid = fork();
@@ -109,7 +196,7 @@ int create_process(char **params, char *arquivo){
             redir_in = 0;
             redir_err = 0;
         }
-        
+
         if (WIFEXITED(res) && (WEXITSTATUS(res)==0))
             return 1;
     }
@@ -117,40 +204,80 @@ int create_process(char **params, char *arquivo){
     return 1;
 }
 
+//Limpa as strings que armazenam comandos e parâmetros 
+void zera_string(char *command, char ** params){
+    int j;
+
+    for (j=0; j< MAX_CMD_SIZE; j++){
+      command[j] = '\0';
+    }
+    for (j=0; j< MAX_ARR_SIZE; j++){
+      params[j] = '\0';
+    }
+}
+
+// void zera_string2(char *command, char **params){
+//     int j, i;
+
+//     for (j=0; j< MAX_CMD_SIZE; j++){
+//         command[j] = '\0';
+//     }
+//     for(i=0; i< MAX_PIPE_SIZ; i++){
+//         for (j=0; j< MAX_PIPE_SIZ; j++){
+//             *params[i][j] = '\0';
+//         }
+//     }
+// }
+
+//Lê entrada de comando e faz o parser, chama funções de tratamento dos comandos
 int read_command() {
-    int i=0, j=0, dir;
+    int i=0, j=0, params_count, dir;
+    int parm = 0;                          //Variáveis Pipe
     char cwdir[MAX_ARR_SIZE];
     char command[MAX_CMD_SIZE];
     char * token;
     char * params[MAX_ARR_SIZE];
     char * arquivo = NULL;
+    char commandpipe[MAX_CMD_SIZE];                 //Variável String completa de comando do Pipe
+    char * paramspipe[MAX_PIPE_SIZ][MAX_PIPE_SIZ];  //Variável String Pipe Parser
 
     //Zerar string
-	for (j=0; j< MAX_CMD_SIZE; j++){
-		command[j] = '\0';
-	}
-	for (j=0; j< MAX_ARR_SIZE; j++){
-		params[j] = '\0';
-	}
+    zera_string (command, params);
+    //strcpy(commandpipe, command);       //Salva comando no commandpipe
+    // zera_string2 (commandpipe, paramspipe);
+
+    // Tratar sinal
+    //signal_handler();
 
     // ler comando e tirar espaços
+    cmd = 0 ;
     fflush(stdin);
     fgets(command, sizeof(char) * MAX_ARR_SIZE, stdin );
     if(command[strlen(command) - 1] == '\n')
         command[strlen(command) - 1] = '\0';
     fflush(stdin);
+    printf("EU AQUI ASASHWUSH\n\n");
+    strcpy(commandpipe, command);       //Salva comando no commandpipe
     token = strtok(command, " ");
+    
+    printf("COMANDO SIM: %d", cmd);
 
     while(token != NULL) {
         params[i] = (char *) malloc(sizeof(strlen(token)));
         strcpy(params[i], token);
         token = strtok(NULL, " ");
+        cmd = 0 ;
+
+        // if( (strcmp(params[i], UP_BUTT) == 0) || (strcmp(params[i], DOWN_BUTT) == 0) ){
+        // // Mostrar comandos anteriores
+        //     print_last_command();
+        // }
 
         if ( strcmp(params[i], "exit") == 0 ){
         // Sair do terminal OK
 
-            return -2;
-        } 
+            exit(0);
+        }
         else if (strcmp(params[i], "cd") == 0){
         // Mover entre diretórios OK
 
@@ -173,21 +300,18 @@ int read_command() {
 	            }
             }
 
-            for (j=0; j< MAX_CMD_SIZE; j++){
-    			command[j] = '\0';
-                params[j] = '\0';
-			}
-        }  
+            zera_string (command, params);
+        }
         else if ( (strcmp(params[i], ">") == 0) || (strcmp(params[i], "<") == 0) || (strcmp(params[i], "2>") == 0)) {
         // Redirecionar arquivos
             printf("ENTROU AQUI\n\n");
-            
+
             if((strcmp(params[i], ">") == 0)){
                 redir_out = 1;
-            } 
+            }
             else if ((strcmp(params[i-1], "<") == 0)){
                 redir_in = 1;
-            } 
+            }
             else if ((strcmp(params[i], "2>") == 0)) {
                 redir_err = 1;
             }
@@ -200,14 +324,57 @@ int read_command() {
             printf("parametro %d: %s", i, params[i]);
             arquivo = (char *) malloc(sizeof(strlen(params[i])));
             strcpy(arquivo, params[i]);
-    
+
             params[i-1] = NULL;
         }
+        else if ( strcmp (params[i], "|") == 0){    
+        //Tratamento de Pipe
+            zera_string (command, params);
 
-        i++;
+            //Parser dos Comandos do Pipe
+            token = strtok(commandpipe, " ");
+            while (token != NULL ){
+
+                if ( strcmp (token, "|") == 0 ){
+                    paramspipe[cmd][parm] = NULL;
+
+                    cmd ++;
+                    parm = 0;
+
+                    token = strtok(NULL, " ");
+                    paramspipe[cmd][parm] = (char*) malloc (sizeof (strlen(token)));
+                    strcpy(paramspipe[cmd][parm], token);
+                    //printf("Parametro[%d][%d]: %s\n", cmd, parm, paramspipe[cmd][parm] );
+                    parm++;
+
+                } else {
+                    paramspipe[cmd][parm]= (char*) malloc (sizeof (strlen(token)));
+                    strcpy(paramspipe[cmd][parm], token);
+                    //printf("Parametro[%d][%d]: %s\n", cmd, parm, paramspipe[cmd][parm] );
+                    parm ++;
+                }
+                token = strtok(NULL, " ");
+
+            }
+            paramspipe[cmd][parm] = NULL;
+            //Função que cria processos para tratar os pipes
+
+        }
+        i++;       
     }
-    printf("****VEIO AQUI****\n\n");
-    create_process(params, arquivo);
+    // params_count++;
+    // insert_command_list(params, params_count);
+    
+    printf ("****VEIO AQUI****\n\n");
+    if(cmd == 0 ){
+        create_process (params, arquivo); printf("createprocesssssss111111111\n");
+        //zera_string2 (commandpipe, paramspipe);
+    } 
+    else {
+        spawn_process (paramspipe, cmd + 1);  printf("spwanprocesssssss11111\n");
+    }
+    
+
 
     return 1;
 }
@@ -219,163 +386,5 @@ int read_command() {
 
 
 
-    // SE TEM PIPE, RETORNA ARRAY DE ARRAYS E USAR FORK OUTRO spawn_process(params, sizeof(params)/8);
-
-// int spawn_process(char **params, int len) {
-//     // SOMENTE USAR QUANDO LS -LA | SORT | MORE
-//     // USAR ARRAY DE ARRAYS, TRATANDO |
-//
-//     int i;
-//     int fd[2];
-//     int pid;
-//     for(i=0; i < len -1 ; i++) {
-//         pipe(fd);
-//         pid = fork();
-//         if (pid == 0) {
-//             // filho
-//             dup2(fd[out],out);
-//             close(fd[out]);
-//             close(fd[in]);
-//             execvp(params[i][0],params[i]);
-//         } else {
-//             //pai
-//             dup2(fd[in],in);
-//             close(fd[out]);
-//             close(fd[in]);
-//         }
-//     }
-//     pid = fork();
-//     if (pid == 0) {
-//         // flho
-//         execvp(params[len-1][0],params[len-1]);
-//     } else {
-//         // pai
-//         int res;
-//         while (1) {
-//         pid = wait(&res);
-//         if (pid == -1)
-//             break;
-//         printf("Processo %d encerrou.\n", pid);
-//         }
-//     }
-// }
 
 
-    /* BEGIN -------------------------- building arg_list --------------------------
-    // Counts pipes
-    char *token_p;
-    char tokenFullCommand[STR_MAX];
-    strcpy(tokenFullCommand, fullCommand);
-    int pipeCount = -1;
-    for(token_p = strtok(tokenFullCommand, "|"); token_p != NULL; token_p = strtok(NULL, "|"))
-      pipeCount++;
-
-    // Allocate the arg_list for pipes
-    char*** arg_list = (char***) malloc((pipeCount+1) * sizeof(char**));
-    // Allocate the command array
-    char** command = (char**) malloc((pipeCount+1) * sizeof(char*));
-
-    int i_command = 0;
-    strcpy(tokenFullCommand, fullCommand);
-    for(token_p = strtok(tokenFullCommand, "|"); token_p != NULL; token_p = strtok(NULL, "|")) {
-      command[i_command] = (char*) malloc(STR_MAX * sizeof(char));
-      strcpy(command[i_command], token_p);
-      i_command++;
-    }
-
-    i_command = 0;
-    strcpy(tokenFullCommand, fullCommand);
-    while(i_command <= pipeCount) {
-      // Counts tokens
-      char *token;
-      char tokenCommand[STR_MAX];
-      strcpy(tokenCommand, command[i_command]);
-      int argCount = 0;
-      for(token = strtok(tokenCommand, " "); token != NULL; token = strtok(NULL, " "))
-        argCount++;
-
-      if (i_command == 0) firstArgCount = argCount; // Store to use in "Change Dir" (CD) part
-
-      // Allocate the arg_list for commands
-      arg_list[i_command] = (char**) malloc((argCount+1) * sizeof(char*));
-
-      // Copies the tokens values to arg_list
-      int j_command = 0;
-      strcpy(tokenCommand, command[i_command]);
-      for(token = strtok(tokenCommand, " "); token != NULL; token = strtok(NULL, " ")) {
-        // Allocate the arg_list for arguments
-        arg_list[i_command][j_command] = (char*) malloc(STR_MAX * sizeof(char));
-        strcpy(arg_list[i_command][j_command], token);
-        j_command++;
-      }
-      arg_list[i_command][j_command] = NULL;
-      i_command++;
-    }
-    /* END -------------------------- building arg_list -------------------------- */
-
-
-/*
-// >
-void func_out(char *params[], char *out){
-    // char * in = "in.txt";
-    // char * out = "out.txt";
-
-    // int fdin = open(in, O_RDONLY, 0);
-    int fdout = open(out, O_WRONLY | O_CREAT, 0);
-
-    //dup2(fdin, 0);
-    dup2(fdout, 1);
-
-    // close(fdin);
-    close(fdout);
-
-    // char * params[] = {"ls",NULL};
-    execvp(params[0], params);
-
-    return;
-}
-
-// <
-void func_in(char *params[], char *in_file){
-    // char * in = "in.txt";
-    // char * out = "out.txt";
-
-    int fdin = open(in_file, O_RDONLY, 0);
-    //int fdout = open(out, O_WRONLY | O_CREAT, 0);
-
-    dup2(fdin, 0);
-    //dup2(fdout, 1);
-
-    close(fdin);
-    //close(fdout);
-
-    // char * params[] = {"ls",NULL};
-    execvp(params[0], params);
-
-    return;
-}
-
-// 2>
-void func_error(char *params[], char *out){
-    // char * in = "in.txt";
-    // char * out = "out.txt";
-    // char * error = "error.txt";
-
-    // int fdin = open(in, O_RDONLY, 0);
-    int fdout = open(out, O_WRONLY|O_APPEND, 0);
-    // int fderror = open(error, O_WRONLY, 0);
-
-    // dup2(fdin, 0);
-    // dup2(fdout, 1);
-    dup2(fdout, 2);
-
-    // close(fdin);
-    // close(fdout);
-    close(fdout);
-
-    // char * params[] = {"rm", "saidaaaaa.txt", NULL};
-    execvp(params[0], params);
-
-    return;
-}
-*/
