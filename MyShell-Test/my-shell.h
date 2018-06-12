@@ -200,6 +200,7 @@ void zera_string(char *command, char ** params){
     for (j=0; j< MAX_ARR_SIZE; j++){
       params[j] = '\0';
     }
+    //token = '\0';
 }
 
 // void zera_string2(char *command, char **params){
@@ -237,7 +238,8 @@ int read_command() {
 
     // ler comando e tirar espaços
     cmd = 0 ;
-    //token = 0;
+    token = 0;
+    printf("EU AQUI ASASHWUSH\n");
 
     fflush(stdin);
     fgets(command, sizeof(char) * MAX_ARR_SIZE, stdin);
@@ -245,7 +247,6 @@ int read_command() {
         command[strlen(command) - 1] = '\0';
 
     fflush(stdin);
-    printf("EU AQUI ASASHWUSH\n");
     strcpy(commandpipe, command);       //Salva comando no commandpipe
     token = strtok(command, " ");
 
