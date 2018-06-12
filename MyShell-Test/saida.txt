@@ -1,0 +1,27 @@
+parametro 2: saida.txt****VEIO AQUI****
+
+hello-world
+hello-world.c
+in.txt
+my-shell
+my-shell2.h
+my-shell.c
+my-shell.h
+saida.txt
+teste
+teste.c
+qualidade@qualidade ~/Documentos/Projeto/MyShell-Test/ $ parametro 2: saida.txt****VEIO AQUI****
+
+hello-world
+hello-world.c
+in.txt
+my-shell
+my-shell2.h
+my-shell.c
+my-shell.h
+saida.txt
+teste
+teste.c
+qualidade@qualidade ~/Documentos/Projeto/MyShell-Test/ $ ENTROU VERIFICAOAÇÃO
+
+

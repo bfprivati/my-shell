@@ -23,20 +23,6 @@ int size_command_list;
 char* command_list[MAX_ARR_SIZE];
 
 
-// char insert_command_list(char ** params, int size_command_list){
-//     command_list[size_command_list] = params;
-// }
-
-// void print_last_command(){
-//     int i = 0, j=0;
-
-//     for (j= size_command_list; j > size_command_list; j--){
-//         printf ("%c ", *command_list[size_command_list]);
-//     }
-// }
-
-/* --------------------------------------------------------------------- */
-
 // Mostrar terminal
 void show_prompt(){
     int i;
@@ -251,27 +237,29 @@ int read_command() {
 
     // ler comando e tirar espaços
     cmd = 0 ;
+    //token = 0;
+
     fflush(stdin);
-    fgets(command, sizeof(char) * MAX_ARR_SIZE, stdin );
+    fgets(command, sizeof(char) * MAX_ARR_SIZE, stdin);
     if(command[strlen(command) - 1] == '\n')
         command[strlen(command) - 1] = '\0';
+
     fflush(stdin);
-    printf("EU AQUI ASASHWUSH\n\n");
+    printf("EU AQUI ASASHWUSH\n");
     strcpy(commandpipe, command);       //Salva comando no commandpipe
     token = strtok(command, " ");
-    
-    printf("COMANDO SIM: %d", cmd);
+
+    printf("COMANDO SIM: %d\n", cmd);
+    printf("TOKEN: %s\n", token);
 
     while(token != NULL) {
         params[i] = (char *) malloc(sizeof(strlen(token)));
         strcpy(params[i], token);
         token = strtok(NULL, " ");
-        cmd = 0 ;
 
-        // if( (strcmp(params[i], UP_BUTT) == 0) || (strcmp(params[i], DOWN_BUTT) == 0) ){
-        // // Mostrar comandos anteriores
-        //     print_last_command();
-        // }
+        printf("\nENTROU WHILE PRINCIPAL\n");
+        printf("PARAMETR DENTRO DO WHILE %s\n", params[i]);
+
 
         if ( strcmp(params[i], "exit") == 0 ){
         // Sair do terminal OK
@@ -327,13 +315,16 @@ int read_command() {
 
             params[i-1] = NULL;
         }
-        else if ( strcmp (params[i], "|") == 0){    
+        else if ( strcmp (params[i], "|") == 0){
         //Tratamento de Pipe
             zera_string (command, params);
 
             //Parser dos Comandos do Pipe
             token = strtok(commandpipe, " ");
             while (token != NULL ){
+
+                printf("\nENTROU WHILE DO PIPE\n");
+                printf("PARAMETR DENTRO DO WHILEP %s\n", params[i]);
 
                 if ( strcmp (token, "|") == 0 ){
                     paramspipe[cmd][parm] = NULL;
@@ -360,21 +351,19 @@ int read_command() {
             //Função que cria processos para tratar os pipes
 
         }
-        i++;       
+        i++;
     }
     // params_count++;
     // insert_command_list(params, params_count);
-    
+
     printf ("****VEIO AQUI****\n\n");
     if(cmd == 0 ){
-        create_process (params, arquivo); printf("createprocesssssss111111111\n");
+        create_process (params, arquivo); printf("VOLTOU DO CREATE_PROCESS\n");
         //zera_string2 (commandpipe, paramspipe);
-    } 
-    else {
-        spawn_process (paramspipe, cmd + 1);  printf("spwanprocesssssss11111\n");
     }
-    
-
+    else {
+        spawn_process (paramspipe, cmd + 1);  printf("VOLTOU DO SPWAN_PROCESS\n");
+    }
 
     return 1;
 }
