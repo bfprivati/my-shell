@@ -116,6 +116,27 @@ int spawn_process(char *params[MAX_PIPE_SIZ][MAX_PIPE_SIZ], int len) {
         }
     }
 
+    pid = fork();
+    if (pid == 0) {
+        // flho
+    //    printf("Entrou no filho\n");
+        execvp(params[len-1][0],params[len-1]);
+    } else {
+      //  printf("Entrou no pai\n");
+        // pai
+        //int res;
+        /*while (pipe_count < len) {
+            printf("Entrou no while?\n");
+            pid = wait(&res);
+
+            //if (pid == -1)
+            //if (WIFEXITED(res) && (WEXITSTATUS(res)==0))
+                //break;
+            printf("Processo %d encerrou.\n", pid);
+            pipe_count ++;
+        }*/
+        dup2(in, STDIN_FILENO);
+    }
     for (i = 0; i < len+1; i++)
         wait(&status);
 
@@ -183,18 +204,19 @@ void zera_string(char *command, char ** params){
     //token = '\0';
 }
 
-// void zera_string2(char *command, char **params){
-//     int j, i;
+int mygetch () {
+    int ch;
+    struct termios oldt, newt;
 
-//     for (j=0; j< MAX_CMD_SIZE; j++){
-//         command[j] = '\0';
-//     }
-//     for(i=0; i< MAX_PIPE_SIZ; i++){
-//         for (j=0; j< MAX_PIPE_SIZ; j++){
-//             *params[i][j] = '\0';
-//         }
-//     }
-// }
+    tcgetattr ( STDIN_FILENO, &oldt );
+    newt = oldt;
+    newt.c_lflag &= ~( ICANON | ECHO );
+    tcsetattr ( STDIN_FILENO, TCSANOW, &newt );
+    ch = getchar();
+    tcsetattr ( STDIN_FILENO, TCSANOW, &oldt );
+
+    return ch;
+}
 
 //Lê entrada de comando e faz o parser, chama funções de tratamento dos comandos
 int read_command() {
@@ -221,6 +243,7 @@ int read_command() {
     token = 0;
     printf("EU AQUI ASASHWUSH\n");
 
+    mygetch();
     fflush(stdin);
     fgets(command, sizeof(char) * MAX_ARR_SIZE, stdin);
     if(command[strlen(command) - 1] == '\n')

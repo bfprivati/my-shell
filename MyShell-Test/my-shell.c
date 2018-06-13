@@ -7,6 +7,7 @@
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
+#include <termios.h>
 #include <wait.h>
 #include "my-shell2.h"
 
