@@ -90,7 +90,7 @@ int spawn_process(char *params[MAX_PIPE_SIZ][MAX_PIPE_SIZ], int len) {
     // USAR ARRAY DE ARRAYS, TRATANDO |
     printf("\nEntrou no spawn_process\n");
 
-    int i;
+    int i, status
     int fd[2];
     int pid;
     int pipe_count;
