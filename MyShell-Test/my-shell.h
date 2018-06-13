@@ -95,6 +95,7 @@ int spawn_process(char *params[MAX_PIPE_SIZ][MAX_PIPE_SIZ], int len) {
     int pid;
     int pipe_count;
     pipe_count = 0;
+
     for(i=0; i < len -1 ; i++) {
         //printf("Entrou no for\n");
         pipe(fd);
@@ -134,11 +135,11 @@ int spawn_process(char *params[MAX_PIPE_SIZ][MAX_PIPE_SIZ], int len) {
             printf("Processo %d encerrou.\n", pid);
             pipe_count ++;
         }*/
-        wait(NULL);
-        wait(NULL);
-        wait(NULL);
         dup2(in, STDIN_FILENO);
     }
+    for (i = 0; i < len+1; i++)
+        wait(&status);
+
     printf("retornar\n");
 }
 
@@ -350,6 +351,7 @@ int read_command() {
             }
             paramspipe[cmd][parm] = NULL;
             //Função que cria processos para tratar os pipes
+            spawn_process (paramspipe, cmd + 1);  printf("VOLTOU DO SPWAN_PROCESS\n");
 
         }
         i++;
@@ -358,13 +360,9 @@ int read_command() {
     // insert_command_list(params, params_count);
 
     printf ("****VEIO AQUI****\n\n");
-    if(cmd == 0 ){
+    //if(cmd == 0 ){
         create_process (params, arquivo); printf("VOLTOU DO CREATE_PROCESS\n");
         //zera_string2 (commandpipe, paramspipe);
-    }
-    else {
-        spawn_process (paramspipe, cmd + 1);  printf("VOLTOU DO SPWAN_PROCESS\n");
-    }
 
     return 1;
 }
