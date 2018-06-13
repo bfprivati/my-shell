@@ -18,7 +18,6 @@
 int redir_out = 0; /* Se (>), a variável redir_out será setada para 1    */
 int redir_in = 0;  /* Se (<), a variável redir_in será setada para 1     */
 int redir_err = 0; /* Se (2>), a variável redir_err será setada para 1   */
-
 int cmd = 0;
 int size_command_list;
 char* command_list[MAX_ARR_SIZE];
@@ -86,20 +85,20 @@ void signal_handler (){
 }
 
 //Trata comandos com pipe " | "
-int spawn_process(char *params[MAX_PIPE_SIZ][MAX_PIPE_SIZ], int pipe_count) {
+int spawn_process(char *params[MAX_PIPE_SIZ][MAX_PIPE_SIZ], int len) {
     // SOMENTE USAR QUANDO LS -LA | SORT | MORE
     // USAR ARRAY DE ARRAYS, TRATANDO |
     printf("\nEntrou no spawn_process\n");
 
-    int process, i, status, pid;
+    int i, status;
     int fd[2];
+    int pid;
+    int pipe_count;
+    pipe_count = 0;
 
-    process = pipe_count * 2;
-
-    for(i=0; i < pipe_count-1 ; i++) {
+    for(i=0; i < len -1 ; i++) {
         //printf("Entrou no for\n");
         pipe(fd);
-
         pid = fork();
         if (pid == 0) {
             //printf("Entrou no for - filho1\n");
@@ -116,11 +115,10 @@ int spawn_process(char *params[MAX_PIPE_SIZ][MAX_PIPE_SIZ], int pipe_count) {
             close(fd[in]);
         }
     }
-    
-    for (i = 0; i < 3; i++)
+
+    for (i = 0; i < len+1; i++)
         wait(&status);
-    
-    
+
     printf("retornar\n");
 }
 
@@ -185,6 +183,19 @@ void zera_string(char *command, char ** params){
     //token = '\0';
 }
 
+// void zera_string2(char *command, char **params){
+//     int j, i;
+
+//     for (j=0; j< MAX_CMD_SIZE; j++){
+//         command[j] = '\0';
+//     }
+//     for(i=0; i< MAX_PIPE_SIZ; i++){
+//         for (j=0; j< MAX_PIPE_SIZ; j++){
+//             *params[i][j] = '\0';
+//         }
+//     }
+// }
+
 //Lê entrada de comando e faz o parser, chama funções de tratamento dos comandos
 int read_command() {
     int i=0, j=0, params_count, dir;
@@ -199,6 +210,8 @@ int read_command() {
 
     //Zerar string
     zera_string (command, params);
+    //strcpy(commandpipe, command);       //Salva comando no commandpipe
+    // zera_string2 (commandpipe, paramspipe);
 
     // Tratar sinal
     //signal_handler();
@@ -317,6 +330,7 @@ int read_command() {
             }
             paramspipe[cmd][parm] = NULL;
             //Função que cria processos para tratar os pipes
+            spawn_process (paramspipe, cmd + 1);  printf("VOLTOU DO SPWAN_PROCESS\n");
 
         }
         i++;
@@ -325,13 +339,9 @@ int read_command() {
     // insert_command_list(params, params_count);
 
     printf ("****VEIO AQUI****\n\n");
-    if(cmd == 0 ){
+    //if(cmd == 0 ){
         create_process (params, arquivo); printf("VOLTOU DO CREATE_PROCESS\n");
         //zera_string2 (commandpipe, paramspipe);
-    }
-    else {
-        spawn_process (paramspipe, cmd + 1);  printf("VOLTOU DO SPWAN_PROCESS\n");
-    }
 
     return 1;
 }
